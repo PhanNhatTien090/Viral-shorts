@@ -23,7 +23,7 @@ async function performHealthCheck() {
     });
     
     const testResult = streamObject({
-      model: google('gemini-2.5-flash-lite'), // ✅ FIXED: Use gemini-2.5-flash (latest available model)
+      model: google('gemini-1.5-flash-latest'), // ✅ FIXED: Use gemini-2.5-flash (latest available model)
       schema: testSchema,
       prompt: 'Reply with: "OK"',
     });
