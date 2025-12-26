@@ -1,0 +1,366 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Sparkles, Copy, CheckCircle2, Loader2 } from 'lucide-react';
+import { experimental_useObject as useObject } from 'ai';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+
+// Define the schema for type safety
+const schema = z.object({
+  hook: z.string(),
+  script: z.string(),
+  cta: z.string(),
+  visualPrompt: z.string(),
+});
+
+export default function Home() {
+  const [topic, setTopic] = useState('');
+  const [vibe, setVibe] = useState('');
+  const [platform, setPlatform] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  // Use the experimental_useObject hook for streaming structured data
+  const { object, submit, isLoading, error } = useObject({
+    api: '/generate',
+    schema,
+  });
+
+  const handleGenerate = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!topic?.trim() || !vibe || !platform) {
+      alert('Vui lòng điền đầy đủ thông tin!');
+      return;
+    }
+
+    console.log('Submitting:', { topic, vibe, platform });
+
+    // Submit the form data to the API
+    submit({
+      topic: topic.trim(),
+      vibe,
+      platform,
+    });
+  };
+
+  // Debug logging
+  useEffect(() => {
+    if (object) {
+      console.log('Stream data:', object);
+    }
+  }, [object]);
+
+  useEffect(() => {
+    if (error) {
+      console.error('Stream error:', error);
+    }
+  }, [error]);
+
+  const handleCopy = async () => {
+    if (!object) return;
+    
+    const textToCopy = `
+🎯 HOOK: ${object.hook || ''}
+
+📝 KỊCH BẢN:
+${object.script || ''}
+
+🚀 CTA: ${object.cta || ''}
+
+🎬 VISUAL PROMPT:
+${object.visualPrompt || ''}
+    `.trim();
+
+    await navigator.clipboard.writeText(textToCopy);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleReset = () => {
+    setTopic('');
+    setVibe('');
+    setPlatform('');
+  };
+
+  return (
+    <div className="flex h-screen bg-zinc-950 text-white">
+      {/* Left Sidebar - Control Panel */}
+      <div className="w-full md:w-[30%] border-r border-zinc-800 p-6 overflow-y-auto">
+        <form onSubmit={handleGenerate} className="space-y-6">
+          {/* Header */}
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold bg-linear-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
+              Viral Short Architect
+            </h1>
+            <p className="text-sm text-zinc-400">
+              Tạo kịch bản viral trong 30 giây ⚡
+            </p>
+          </div>
+
+          {/* Form Fields */}
+          <div className="space-y-4">
+            {/* Topic Input */}
+            <div className="space-y-2">
+              <Label htmlFor="topic" className="text-zinc-200">
+                Chủ đề Video
+              </Label>
+              <Input
+                id="topic"
+                placeholder="VD: Bí quyết kiếm tiền online 2024..."
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                disabled={isLoading}
+                className="bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-500 disabled:opacity-50"
+              />
+            </div>
+
+            {/* Vibe Select */}
+            <div className="space-y-2">
+              <Label htmlFor="vibe" className="text-zinc-200">
+                Phong cách
+              </Label>
+              <Select value={vibe} onValueChange={setVibe} disabled={isLoading}>
+                <SelectTrigger
+                  id="vibe"
+                  className="bg-zinc-900 border-zinc-800 text-white disabled:opacity-50"
+                >
+                  <SelectValue placeholder="Chọn phong cách..." />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                  <SelectItem value="humorous">🤣 Hài hước</SelectItem>
+                  <SelectItem value="drama">🎭 Drama</SelectItem>
+                  <SelectItem value="expert">👔 Chuyên gia</SelectItem>
+                  <SelectItem value="storytelling">📖 Kể chuyện</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Platform Select */}
+            <div className="space-y-2">
+              <Label htmlFor="platform" className="text-zinc-200">
+                Nền tảng
+              </Label>
+              <Select value={platform} onValueChange={setPlatform} disabled={isLoading}>
+                <SelectTrigger
+                  id="platform"
+                  className="bg-zinc-900 border-zinc-800 text-white disabled:opacity-50"
+                >
+                  <SelectValue placeholder="Chọn nền tảng..." />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                  <SelectItem value="tiktok">📱 TikTok</SelectItem>
+                  <SelectItem value="facebook">👥 Facebook Reels</SelectItem>
+                  <SelectItem value="youtube">▶️ YouTube Shorts</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Generate Button */}
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-linear-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-6 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Đang tạo...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 h-5 w-5" />
+                  Sáng tạo ngay
+                </>
+              )}
+            </Button>
+          </div>
+
+          {/* Info Box */}
+          <div className="p-4 rounded-lg bg-zinc-900 border border-zinc-800">
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              💡 <strong>Tips:</strong> Chủ đề càng cụ thể, kịch bản càng viral.
+              Thử nghiệm các phong cách khác nhau để tìm style phù hợp!
+            </p>
+          </div>
+
+          {/* Error Display */}
+          {error && (
+            <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 animate-in fade-in">
+              <p className="text-red-400 text-sm font-medium">
+                ⚠️ Lỗi: {error?.message || 'Có lỗi xảy ra'}
+              </p>
+            </div>
+          )}
+        </form>
+      </div>
+
+      {/* Right Panel - Output Area */}
+      <div className="flex-1 flex flex-col">
+        <ScrollArea className="flex-1 p-6">
+          {!object && !isLoading ? (
+            // Placeholder State
+            <div className="h-full flex items-center justify-center">
+              <div className="text-center space-y-4 max-w-md">
+                <div className="text-6xl mb-4">✨</div>" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            // Result Display - Real-time Streaming
+            <div className="space-y-6 max-w-4xl mx-auto">
+              {/* Loading Indicator */}
+              {isLoading && (
+                <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20 animate-pulse">
+                  <p className="text-blue-400 font-medium flex items-center">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    AI đang sáng tạo kịch bản của bạn...
+                  </p>
+                </div>
+              )}
+
+              {/* Success Message - Only show when complete */}
+              {object && !isLoading && object.hook && object.script && object.cta && object.visualPrompt && (
+                <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                  <p className="text-green-400 font-medium">
+                    ✅ Kịch bản của bạn đã sẵn sàng!
+                  </p>
+                </div>
+              )}
+
+              {/* Hook Card - Renders immediately when hook starts streaming */}
+              {object?.hook && (
+                <Card className="bg-zinc-900 border-zinc-800 text-white animate-in fade-in slide-in-from-top-4 duration-500">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-purple-400">
+                      <span>🎯</span> Hook (Câu mở đầu hút người xem)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-xl font-semibold leading-relaxed">{object.hook}</p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Script Card - Renders as script streams in */}
+              {object?.script && (
+                <Card className="bg-zinc-900 border-zinc-800 text-white animate-in fade-in slide-in-from-top-4 duration-500">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-pink-400">
+                      <span>📝</span> Kịch bản đầy đủ
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-sm leading-relaxed text-zinc-300 whitespace-pre-wrap">
+                      {object.script}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* CTA Card - Renders when CTA is available */}
+              {object?.cta && (
+                <Card className="bg-zinc-900 border-zinc-800 text-white animate-in fade-in slide-in-from-top-4 duration-500">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-green-400">
+                      <span>🚀</span> Call to Action
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-lg font-medium text-zinc-300 leading-relaxed">
+                      {object.cta}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Visual Prompt Card - Renders when visualPrompt is available */}
+              {object?.visualPrompt && (
+                <Card className="bg-zinc-900 border-zinc-800 text-white animate-in fade-in slide-in-from-top-4 duration-500">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-blue-400">
+                      <span>🎬</span> Visual Prompt (Dùng cho AI Video)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="relative">
+                      <pre className="text-sm leading-relaxed text-zinc-300 bg-zinc-800/50 p-4 rounded-lg font-mono overflow-x-auto">
+                        {object.visualPrompt}
+                      </pre>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="absolute top-2 right-2 text-zinc-400 hover:text-white"
+                        onClick={() => {
+                          navigator.clipboard.writeText(object.visualPrompt || '');
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 2000);
+                        }}
+                      >
+                        {copied ? <CheckCircle2 className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Action Buttons - Show when generation is complete */}
+              {object && !isLoading && (
+                <div className="flex gap-3 justify-center pt-4 animate-in fade-in duration-500">
+                  <Button
+                    variant="outline"
+                    className="border-zinc-700 text-white hover:bg-zinc-800"
+                    onClick={() => {
+                      setTopic('');
+                      setVibe('');
+                      setPlatform('');
+                    }}
+                  >
+                    Tạo mới
+                  </Button>
+                  <Button
+                    onClick={handleCopy}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    {copied ? (
+                      <>
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        Đã sao chép!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="mr-2 h-4 w-4" />
+                        Sao chép toàn bộ
+                    {copied ? (
+                      <>
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        Đã sao chép!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="mr-2 h-4 w-4" />
+                        Sao chép kịch bản
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </ScrollArea>
+      </div>
+    </div>
+  );
+}

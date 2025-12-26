@@ -1,0 +1,231 @@
+'use client';
+
+import { TimelineCard, TimelineCardSkeleton } from './TimelineCard';
+import { ThumbsUp, ThumbsDown, Flame, Brain, Users, Lightbulb } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
+
+interface AnalysisData {
+  hookPsychology: string;
+  viralScore: number;
+  audienceInsight: string;
+  viralFramework: string;
+}
+
+interface ScriptData {
+  hook: string;
+  body: string[];
+  cta: string;
+  analysis?: AnalysisData;
+}
+
+interface ScriptTimelineProps {
+  data?: ScriptData;
+  isLoading?: boolean;
+  className?: string;
+}
+
+export function ScriptTimeline({ data, isLoading = false, className }: ScriptTimelineProps) {
+  const [feedback, setFeedback] = useState<'up' | 'down' | null>(null);
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+  };
+
+  if (isLoading) {
+    return (
+      <div className={cn('relative', className)}>
+        {/* Loading shimmer effect */}
+        <div className="absolute inset-0 bg-linear-to-r from-transparent via-zinc-800/20 to-transparent animate-shimmer" />
+        <TimelineCardSkeleton isFirst />
+        <TimelineCardSkeleton />
+        <TimelineCardSkeleton isLast />
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="relative mb-6">
+          <div className="w-20 h-20 rounded-full bg-linear-to-br from-pink-500/20 to-purple-500/20 flex items-center justify-center animate-pulse">
+            <span className="text-4xl">✨</span>
+          </div>
+          <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
+            <span className="text-xl">🎬</span>
+          </div>
+        </div>
+        <h3 className="text-xl font-semibold text-zinc-200 mb-2">
+          Sẵn sàng tạo nội dung viral?
+        </h3>
+        <p className="text-sm text-zinc-400 max-w-sm leading-relaxed">
+          Điền thông tin bên trái và nhấn &ldquo;Tạo Kịch Bản&rdquo; để AI bắt đầu viết kịch bản triệu views cho bạn
+        </p>
+        <div className="mt-6 flex gap-2">
+          <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce" />
+          <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+        </div>
+      </div>
+    );
+  }
+
+  const bodyText = Array.isArray(data.body) ? data.body.join('\n\n') : data.body;
+
+  return (
+    <div className={cn('relative', className)}>
+      {/* 🔥 Viral Score Badge - Floating */}
+      {data.analysis?.viralScore && (
+        <div className="absolute -top-2 right-0 z-10">
+          <div className={cn(
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-full',
+            'bg-linear-to-r shadow-lg',
+            data.analysis.viralScore >= 8 
+              ? 'from-orange-500 to-red-500 shadow-orange-500/30' 
+              : data.analysis.viralScore >= 6 
+              ? 'from-yellow-500 to-orange-500 shadow-yellow-500/30'
+              : 'from-zinc-600 to-zinc-500 shadow-zinc-500/20'
+          )}>
+            <Flame className="h-4 w-4 text-white" />
+            <span className="text-sm font-bold text-white">
+              {data.analysis.viralScore}/10
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Gradient glow effect behind cards */}
+      <div className="absolute top-0 left-8 w-1 h-full bg-linear-to-b from-pink-500/20 via-purple-500/10 to-transparent pointer-events-none blur-lg" />
+
+      {/* Hook Card */}
+      <TimelineCard
+        timeLabel="0-3s"
+        titleLabel="HOOK"
+        variant="hook"
+        isFirst
+        onCopy={() => copyToClipboard(data.hook)}
+      >
+        <p className="font-medium">{data.hook}</p>
+        
+        {/* 🧠 Hook Psychology Tooltip - Why this works */}
+        {data.analysis?.hookPsychology && (
+          <div className="mt-3 pt-3 border-t border-red-500/20">
+            <div className="flex items-start gap-2">
+              <Brain className="h-4 w-4 text-yellow-400 shrink-0 mt-0.5" />
+              <div>
+                <span className="text-xs font-semibold text-yellow-400">Tại sao hook này hiệu quả?</span>
+                <p className="text-xs text-zinc-400 mt-0.5 leading-relaxed">
+                  {data.analysis.hookPsychology}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </TimelineCard>
+
+      {/* Body Card */}
+      <TimelineCard
+        timeLabel="3-20s"
+        titleLabel="NỘI DUNG"
+        variant="body"
+        onCopy={() => copyToClipboard(bodyText)}
+      >
+        {Array.isArray(data.body) ? (
+          <ul className="space-y-2">
+            {data.body.map((point, index) => (
+              <li key={index} className="flex items-start gap-2">
+                <span className="text-pink-400 font-bold mt-0.5">•</span>
+                <span>{point}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>{data.body}</p>
+        )}
+      </TimelineCard>
+
+      {/* CTA Card */}
+      <TimelineCard
+        timeLabel="End"
+        titleLabel="KÊU GỌI HÀNH ĐỘNG"
+        variant="cta"
+        isLast
+        onCopy={() => copyToClipboard(data.cta)}
+      >
+        <p className="font-medium">{data.cta}</p>
+      </TimelineCard>
+
+      {/* 📊 Viral Analysis Panel */}
+      {data.analysis && (
+        <div className="mt-6 p-4 rounded-xl bg-linear-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20">
+          <div className="flex items-center gap-2 mb-4">
+            <Lightbulb className="h-5 w-5 text-purple-400" />
+            <h4 className="text-sm font-semibold text-purple-300">Phân Tích Viral</h4>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Audience Insight */}
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-blue-500/20 shrink-0">
+                <Users className="h-4 w-4 text-blue-400" />
+              </div>
+              <div>
+                <span className="text-xs font-medium text-zinc-500">Đối tượng mục tiêu</span>
+                <p className="text-sm text-zinc-200 mt-0.5">{data.analysis.audienceInsight}</p>
+              </div>
+            </div>
+            
+            {/* Viral Framework */}
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-pink-500/20 shrink-0">
+                <Brain className="h-4 w-4 text-pink-400" />
+              </div>
+              <div>
+                <span className="text-xs font-medium text-zinc-500">Kỹ thuật Viral</span>
+                <p className="text-sm text-zinc-200 mt-0.5">{data.analysis.viralFramework}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Feedback Section */}
+      <div className="mt-6 pt-4 border-t border-zinc-800">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-zinc-500">Đánh giá kịch bản này:</span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                'h-9 px-3 transition-all duration-200',
+                feedback === 'up'
+                  ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
+                  : 'text-zinc-500 hover:text-green-400 hover:bg-green-500/10'
+              )}
+              onClick={() => setFeedback(feedback === 'up' ? null : 'up')}
+            >
+              <ThumbsUp className="h-4 w-4 mr-1" />
+              Hay
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                'h-9 px-3 transition-all duration-200',
+                feedback === 'down'
+                  ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                  : 'text-zinc-500 hover:text-red-400 hover:bg-red-500/10'
+              )}
+              onClick={() => setFeedback(feedback === 'down' ? null : 'down')}
+            >
+              <ThumbsDown className="h-4 w-4 mr-1" />
+              Chưa ổn
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

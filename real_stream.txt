@@ -1,0 +1,6 @@
+﻿{
+  "hook": "Ê tụi bây, tao vừa phát hiện ra cái format mới toanh, nghe nói 'format-test-abc123' đang làm mưa làm gió đó!",
+  "script": "- Đừng hỏi format này là gì nha, vì chính tao cũng không biết. Nhưng nghe tên thôi đã thấy nó 'chất' rồi! - Cái quan trọng là, ai cũng đang nói về nó, nên mình cũng phải nói theo cho 'bắt trend'. - Nó giống như việc bạn giả vờ hiểu một meme mới toanh vậy đó, cứ gật gù rồi cười theo thôi. - Thôi thì cứ 'format-test-abc123' đi, biết đâu lại thành triệu view!",
+  "cta": "Thấy video này hay không? Hay là tao bị 'format-test-abc123' nhập rồi? Comment cho tao biết nha!",
+  "visualPrompt": "A close-up shot of a Gen Z individual reacting with exaggerated confusion and humor, then a quick montage of diverse people nodding in agreement to something unseen, followed by a wide shot of a futuristic cityscape at night with holographic screens displaying abstract code 'abc123' in neon colors. Cinematic lighting, vibrant purple and blue hues, shallow depth of field, 4K, high contrast, film grain."
+}
