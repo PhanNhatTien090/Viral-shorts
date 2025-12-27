@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, serial, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, serial, jsonb, integer } from 'drizzle-orm/pg-core';
 
 /**
  * Users table
@@ -19,3 +19,29 @@ export const cachedResults = pgTable('cached_results', {
   data: jsonb('data').notNull(), // Lưu toàn bộ kết quả (Hook, Script, Visual)
   createdAt: timestamp('created_at').defaultNow(),
 });
+
+/**
+ * Scripts table
+ * Stores user-saved scripts for their library
+ */
+export const scripts = pgTable('scripts', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull(), // Clerk user ID
+  title: text('title').notNull(), // Auto-generated from hook or topic
+  topic: text('topic'), // Original topic input
+  platform: text('platform'), // tiktok, youtube, facebook
+  vibe: text('vibe'), // humorous, drama, expert, storytelling
+  hook: text('hook').notNull(),
+  script: text('script').notNull(),
+  cta: text('cta').notNull(),
+  visualPrompt: text('visual_prompt'),
+  analysis: jsonb('analysis'), // Viral analysis data
+  viralScore: integer('viral_score'), // Extracted for easy sorting
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Type exports for TypeScript
+export type Script = typeof scripts.$inferSelect;
+export type NewScript = typeof scripts.$inferInsert;
+

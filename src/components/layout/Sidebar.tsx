@@ -5,6 +5,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
+  SignedIn,
+  SignedOut,
+  UserButton,
+  SignInButton,
+} from '@clerk/nextjs';
+import {
   Sparkles,
   FolderOpen,
   LayoutTemplate,
@@ -14,6 +20,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clapperboard,
+  LogIn,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -145,19 +152,50 @@ export function Sidebar({ historyItems = [], onNewScript, className }: SidebarPr
           )}
         </nav>
 
-        {/* Footer */}
+        {/* Footer - User Avatar / Sign In */}
         <div className="p-4 border-t border-zinc-800/50">
-          {!collapsed && (
-            <div className="flex items-center gap-3 px-2">
-              <div className="h-8 w-8 rounded-full bg-linear-to-br from-pink-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
-                U
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate">User</p>
-                <p className="text-xs text-zinc-500 truncate">Free Plan</p>
-              </div>
+          {/* Signed In: Show UserButton with avatar */}
+          <SignedIn>
+            <div className={cn(
+              'flex items-center gap-3',
+              collapsed ? 'justify-center' : 'px-2'
+            )}>
+              <UserButton 
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    avatarBox: 'h-8 w-8',
+                    userButtonPopoverCard: 'bg-zinc-900 border-zinc-800',
+                    userButtonPopoverActionButton: 'text-zinc-300 hover:bg-zinc-800',
+                    userButtonPopoverActionButtonText: 'text-zinc-300',
+                    userButtonPopoverFooter: 'hidden',
+                  }
+                }}
+              />
+              {!collapsed && (
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white truncate">Account</p>
+                  <p className="text-xs text-zinc-500 truncate">Free Plan</p>
+                </div>
+              )}
             </div>
-          )}
+          </SignedIn>
+          
+          {/* Signed Out: Show Sign In button */}
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button className={cn(
+                'flex items-center gap-3 w-full rounded-lg transition-colors',
+                'text-zinc-400 hover:text-white hover:bg-zinc-800/50',
+                collapsed ? 'justify-center p-2' : 'px-3 py-2'
+              )}>
+                <LogIn className="h-5 w-5 shrink-0 text-pink-400" />
+                {!collapsed && (
+                  <span className="text-sm font-medium">Sign In</span>
+                )}
+              </button>
+            </SignInButton>
+          </SignedOut>
         </div>
       </div>
     </motion.aside>

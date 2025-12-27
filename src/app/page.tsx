@@ -2,9 +2,10 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Sparkles, Loader2, Zap, Settings2, LayoutTemplate, X } from 'lucide-react';
+import { Sparkles, Loader2, Zap, Settings2, LayoutTemplate, X, Lock } from 'lucide-react';
 import { experimental_useObject as useObject } from '@ai-sdk/react';
 import { z } from 'zod';
+import { useUser, SignInButton } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,12 +17,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Sidebar, MainLayout } from '@/components/layout';
-import { ScriptTimeline, ActionBar } from '@/components/molecules';
+import { ScriptTimeline, ActionBar, GuestUsageBanner } from '@/components/molecules';
 import { cn } from '@/lib/utils';
 import { viralHooks } from '@/data/viral-hooks';
+import { useGuestUsage } from '@/hooks/useGuestUsage';
 
 // CRITICAL: Must match backend schema EXACTLY
-// 🧠 Advanced Schema with Viral Analysis
+// 🧠 Advanced Schema with Viral Analysis (analysis is optional for graceful degradation)
 const schema = z.object({
   hook: z.string(),
   script: z.string(),
@@ -32,7 +34,7 @@ const schema = z.object({
     viralScore: z.number(),
     audienceInsight: z.string(),
     viralFramework: z.string(),
-  }),
+  }).optional(),
 });
 
 // Pill toggle button component
@@ -96,6 +98,17 @@ function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
+  // 🔐 Auth state from Clerk
+  const { isSignedIn, isLoaded: isAuthLoaded } = useUser();
+  
+  // 👻 Guest usage tracking
+  const { 
+    remainingGenerations, 
+    canGenerate: guestCanGenerate, 
+    isLimitReached,
+    incrementUsage 
+  } = useGuestUsage();
+  
   // Check for template params on initial render
   const templateId = searchParams.get('template');
   const patternParam = searchParams.get('pattern');
@@ -107,6 +120,11 @@ function HomeContent() {
   const [healthStatus, setHealthStatus] = useState<'checking' | 'healthy' | 'unhealthy'>('checking');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [activeTemplate, setActiveTemplate] = useState<string | null>(initialTemplate ? templateId : null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
+  const [saveMessage, setSaveMessage] = useState('');
+
+  // 🎯 Determine if user can generate (signed in = unlimited, guest = limited)
+  const canGenerate = isSignedIn || guestCanGenerate;
 
   // Clear URL params after mounting if template was used
   useEffect(() => {
@@ -177,8 +195,18 @@ function HomeContent() {
       return;
     }
 
+    // 🔐 Check if guest can generate
+    if (!isSignedIn && !guestCanGenerate) {
+      return; // Button should be disabled, but double-check
+    }
+
     console.log('Submitting:', { topic, vibe, platform });
     submit({ topic: topic.trim(), vibe, platform });
+    
+    // 👻 Increment guest usage counter (only for guests)
+    if (!isSignedIn) {
+      incrementUsage();
+    }
   };
 
   const handleCopyAll = () => {
@@ -194,9 +222,60 @@ function HomeContent() {
     }
   };
 
-  const handleSave = () => {
-    // TODO: Implement save to library functionality
-    console.log('Saving to library...', object);
+  const handleSave = async () => {
+    // Don't save if no content or not signed in
+    if (!object || !isSignedIn) {
+      console.log('Cannot save: no content or not signed in');
+      return;
+    }
+
+    setSaveStatus('saving');
+    setSaveMessage('');
+
+    try {
+      const response = await fetch('/api/scripts/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scriptData: {
+            hook: object.hook,
+            script: object.script,
+            cta: object.cta,
+            visualPrompt: object.visualPrompt,
+            analysis: object.analysis,
+          },
+          topic,
+          platform,
+          vibe,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSaveStatus('success');
+        setSaveMessage('Đã lưu vào thư viện!');
+        console.log('✅ Script saved:', data);
+        
+        // Reset status after 3 seconds
+        setTimeout(() => {
+          setSaveStatus('idle');
+          setSaveMessage('');
+        }, 3000);
+      } else {
+        throw new Error(data.error || 'Failed to save');
+      }
+    } catch (error) {
+      console.error('❌ Save error:', error);
+      setSaveStatus('error');
+      setSaveMessage('Lỗi khi lưu. Vui lòng thử lại.');
+      
+      // Reset status after 3 seconds
+      setTimeout(() => {
+        setSaveStatus('idle');
+        setSaveMessage('');
+      }, 3000);
+    }
   };
 
   // Convert script to body array for timeline + include analysis
@@ -408,30 +487,49 @@ function HomeContent() {
                 </div>
               )}
 
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                disabled={isLoading || !topic || !vibe || !platform}
-                className={cn(
-                  'w-full h-12 text-base font-semibold transition-all duration-300',
-                  'bg-linear-to-r from-pink-500 to-purple-500',
-                  'hover:from-pink-600 hover:to-purple-600',
-                  'shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30',
-                  'disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none'
-                )}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Đang tạo kịch bản...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-2 h-5 w-5" />
-                    Tạo Kịch Bản
-                  </>
+              {/* Submit Button - with guest limit handling */}
+              {!isSignedIn && isLimitReached ? (
+                // 🔒 Guest limit reached - show sign-in CTA
+                <SignInButton mode="modal">
+                  <Button
+                    type="button"
+                    className={cn(
+                      'w-full h-12 text-base font-semibold transition-all duration-300',
+                      'bg-linear-to-r from-pink-500 to-purple-500',
+                      'hover:from-pink-600 hover:to-purple-600',
+                      'shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30'
+                    )}
+                  >
+                    <Lock className="mr-2 h-5 w-5" />
+                    Đăng nhập để tiếp tục tạo
+                  </Button>
+                </SignInButton>
+              ) : (
+                // ✅ Normal submit button
+                <Button
+                  type="submit"
+                  disabled={isLoading || !topic || !vibe || !platform || !canGenerate}
+                  className={cn(
+                    'w-full h-12 text-base font-semibold transition-all duration-300',
+                    'bg-linear-to-r from-pink-500 to-purple-500',
+                    'hover:from-pink-600 hover:to-purple-600',
+                    'shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30',
+                    'disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none'
+                  )}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Đang tạo kịch bản...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-5 w-5" />
+                      Tạo Kịch Bản
+                    </>
                   )}
                 </Button>
+              )}
               </div>
             </form>
 
@@ -443,14 +541,40 @@ function HomeContent() {
                 tăng tính thuyết phục!
               </p>
             </div>
+            
+            {/* 👻 Guest Usage Banner - only show for signed out users */}
+            {isAuthLoaded && !isSignedIn && (
+              <GuestUsageBanner
+                remainingGenerations={remainingGenerations}
+                isLimitReached={isLimitReached}
+              />
+            )}
           </div>
 
           {/* Right Column - Output Area (Fills remaining space) */}
           <div className="flex-1 min-w-0 space-y-4">
+            {/* Toast Notification */}
+            {saveMessage && (
+              <div className={cn(
+                'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg transition-all duration-300',
+                'flex items-center gap-2',
+                saveStatus === 'success' && 'bg-green-500/20 border border-green-500/30 text-green-400',
+                saveStatus === 'error' && 'bg-red-500/20 border border-red-500/30 text-red-400',
+                saveStatus === 'saving' && 'bg-blue-500/20 border border-blue-500/30 text-blue-400'
+              )}>
+                {saveStatus === 'saving' && <Loader2 className="h-4 w-4 animate-spin" />}
+                {saveStatus === 'success' && <span>✅</span>}
+                {saveStatus === 'error' && <span>❌</span>}
+                <span className="text-sm font-medium">{saveMessage}</span>
+              </div>
+            )}
+            
             {/* Action Bar */}
             <ActionBar
               hasContent={!!scriptData}
               isGenerating={isLoading}
+              isSignedIn={!!isSignedIn}
+              isSaving={saveStatus === 'saving'}
               onCopyAll={handleCopyAll}
               onRegenerate={handleRegenerate}
               onSave={handleSave}

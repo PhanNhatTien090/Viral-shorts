@@ -1,9 +1,10 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Copy, RefreshCw, Save, Check } from 'lucide-react';
+import { Copy, RefreshCw, Save, Check, LogIn, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { SignInButton } from '@clerk/nextjs';
 
 interface ActionBarProps {
   onCopyAll?: () => void;
@@ -11,6 +12,8 @@ interface ActionBarProps {
   onSave?: () => void;
   isGenerating?: boolean;
   hasContent?: boolean;
+  isSignedIn?: boolean;
+  isSaving?: boolean; // New prop for save loading state
   className?: string;
 }
 
@@ -20,10 +23,11 @@ export function ActionBar({
   onSave,
   isGenerating = false,
   hasContent = false,
+  isSignedIn = false,
+  isSaving = false,
   className,
 }: ActionBarProps) {
   const [copied, setCopied] = useState(false);
-  const [saved, setSaved] = useState(false);
 
   const handleCopyAll = () => {
     onCopyAll?.();
@@ -32,12 +36,26 @@ export function ActionBar({
   };
 
   const handleSave = () => {
+    if (!isSignedIn || isSaving) {
+      return;
+    }
     onSave?.();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
   };
 
   if (!hasContent) return null;
+
+  // Save button content - shared between signed in and signed out states
+  const saveButtonContent = isSaving ? (
+    <>
+      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+      Đang lưu...
+    </>
+  ) : (
+    <>
+      {isSignedIn ? <Save className="h-4 w-4 mr-2" /> : <LogIn className="h-4 w-4 mr-2" />}
+      {isSignedIn ? 'Lưu' : 'Đăng nhập để lưu'}
+    </>
+  );
 
   return (
     <div
@@ -97,30 +115,36 @@ export function ActionBar({
             Tạo lại
           </Button>
 
-          {/* Save to Library */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSave}
-            className={cn(
-              'h-9 px-3 transition-all duration-200 whitespace-nowrap',
-              saved
-                ? 'bg-purple-500/20 text-purple-400'
-                : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
-            )}
-          >
-            {saved ? (
-              <>
-                <Check className="h-4 w-4 mr-2" />
-                Đã lưu
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4 mr-2" />
-                Lưu
-              </>
-            )}
-          </Button>
+          {/* Save to Library - with auth gate */}
+          {isSignedIn ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSave}
+              disabled={isSaving}
+              className={cn(
+                'h-9 px-3 transition-all duration-200 whitespace-nowrap',
+                isSaving
+                  ? 'bg-blue-500/20 text-blue-400'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+              )}
+            >
+              {saveButtonContent}
+            </Button>
+          ) : (
+            <SignInButton mode="modal">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  'h-9 px-3 transition-all duration-200 whitespace-nowrap',
+                  'text-pink-400 hover:text-pink-300 hover:bg-pink-500/10 border border-pink-500/30'
+                )}
+              >
+                {saveButtonContent}
+              </Button>
+            </SignInButton>
+          )}
         </div>
       </div>
     </div>

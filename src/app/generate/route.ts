@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { db } from '@/lib/db';
 import { cachedResults } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { auth } from '@clerk/nextjs/server';
 
 // 🚀 COST OPTIMIZATION: Use Google Gemini 2.5 Flash (FREE tier)
 const google = createGoogleGenerativeAI({
@@ -109,6 +110,11 @@ function createCachedStream(cachedData: ScriptResult): ReadableStream<Uint8Array
 export async function POST(req: Request) {
   const startTime = Date.now();
   
+  // 🔐 Get userId from Clerk (null for guests, string for logged-in users)
+  const { userId } = await auth();
+  const isGuest = !userId;
+  console.log(`👤 User status: ${isGuest ? 'Guest' : `Logged in (${userId})`}`);
+  
   try {
     // Check if health check failed
     if (!healthCheckPassed && healthCheckError) {
@@ -126,7 +132,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { topic, vibe, platform } = body;
 
-    console.log('📥 API received:', { topic, vibe, platform });
+    console.log('📥 API received:', { topic, vibe, platform, isGuest });
 
     // Validate input
     if (!topic || !vibe || !platform) {
@@ -256,7 +262,7 @@ Chấm điểm viral từ 1-10. Giải thích tại sao hook này sẽ được 
 ⚡ BẮT ĐẦU TẠO NGAY - KHÔNG NÓI THÊM GÌ:
       `.trim(),
       
-      // 💾 STEP D: Save to cache when generation completes
+      // 💾 STEP D: Save to cache when generation completes (only for logged-in users)
       onFinish: async ({ object, error }) => {
         if (error) {
           console.error('❌ Generation error:', error);
@@ -270,6 +276,12 @@ Chấm điểm viral từ 1-10. Giải thích tại sao hook này sẽ được 
 
         const elapsedTime = Date.now() - startTime;
         console.log(`✨ Generation completed (${elapsedTime}ms)`);
+
+        // 🔐 Only save to database for logged-in users
+        if (isGuest) {
+          console.log('👻 Guest user - skipping cache save (no persistent storage)');
+          return;
+        }
 
         // Save to database cache (non-blocking - don't fail request if this fails)
         try {
