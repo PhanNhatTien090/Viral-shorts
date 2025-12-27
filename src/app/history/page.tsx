@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Sidebar, MainLayout } from '@/components/layout';
 import { History, Clock, Calendar, Zap, Copy, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -105,17 +106,31 @@ export default function HistoryPage() {
   useEffect(() => {
     async function fetchScripts() {
       try {
+        console.log('📖 [HISTORY] Fetching scripts from API...');
         setIsLoading(true);
-        const response = await fetch('/api/scripts/get');
+        const response = await fetch('/api/scripts/get', {
+          credentials: 'include', // 🔐 Ensure cookies are sent
+        });
+        
+        console.log('📖 [HISTORY] Response status:', response.status);
+        
         const data = await response.json();
+        
+        console.log('📖 [HISTORY] Response data:', {
+          success: data.success,
+          count: data.count,
+          error: data.error,
+          scriptsReceived: data.scripts?.length || 0,
+        });
 
         if (response.ok) {
           setScripts(data.scripts || []);
+          console.log('✅ [HISTORY] Scripts loaded:', data.scripts?.length || 0);
         } else {
           throw new Error(data.error || 'Failed to fetch scripts');
         }
       } catch (err) {
-        console.error('Error fetching scripts:', err);
+        console.error('❌ [HISTORY] Error fetching scripts:', err);
         setError(err instanceof Error ? err.message : 'Failed to load scripts');
       } finally {
         setIsLoading(false);
@@ -165,16 +180,40 @@ export default function HistoryPage() {
 
             {/* Empty State */}
             {!isLoading && !error && scripts.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-20 px-4 rounded-2xl bg-zinc-900/40 border border-zinc-800/50">
-                <div className="p-4 rounded-full bg-blue-500/10 mb-4">
-                  <Clock className="h-10 w-10 text-blue-400" />
+              <div className="flex flex-col items-center justify-center py-16 md:py-24 px-4 rounded-2xl bg-zinc-900/40 border border-zinc-800/50">
+                {/* Animated Icon */}
+                <div className="relative mb-6">
+                  <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-linear-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20 flex items-center justify-center">
+                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-linear-to-br from-blue-500/30 to-purple-500/30 flex items-center justify-center">
+                      <Clock className="h-10 w-10 md:h-12 md:w-12 text-blue-400" />
+                    </div>
+                  </div>
+                  {/* Floating elements */}
+                  <div className="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-pink-500/30 flex items-center justify-center animate-bounce">
+                    <span className="text-lg">📝</span>
+                  </div>
                 </div>
-                <h2 className="text-xl font-semibold text-white mb-2">
-                  Chưa có lịch sử
+                
+                {/* Title */}
+                <h2 className="text-xl md:text-2xl font-bold text-white mb-3 text-center">
+                  Chưa có kịch bản nào
                 </h2>
-                <p className="text-zinc-400 text-center max-w-md">
-                  Bạn chưa lưu kịch bản nào. Tạo kịch bản mới và nhấn &quot;Lưu&quot; để thêm vào lịch sử.
+                
+                {/* Description */}
+                <p className="text-sm md:text-base text-zinc-400 text-center max-w-md leading-relaxed mb-6">
+                  Hãy tạo kịch bản đầu tiên của bạn! Sau khi tạo xong, nhấn nút 
+                  <span className="text-pink-400 font-medium"> &quot;Lưu&quot; </span> 
+                  để lưu vào thư viện.
                 </p>
+                
+                {/* CTA Button */}
+                <Link 
+                  href="/"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-linear-to-r from-pink-500 to-purple-500 text-white font-medium hover:from-pink-600 hover:to-purple-600 transition-all shadow-lg shadow-pink-500/20"
+                >
+                  <span>✨</span>
+                  Tạo kịch bản đầu tiên
+                </Link>
               </div>
             )}
 

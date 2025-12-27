@@ -1,6 +1,6 @@
 'use client';
 
-import { TimelineCard, TimelineCardSkeleton } from './TimelineCard';
+import { TimelineCard } from './TimelineCard';
 import { ThumbsUp, ThumbsDown, Flame, Brain, Users, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
@@ -36,36 +36,116 @@ export function ScriptTimeline({ data, isLoading = false, className }: ScriptTim
   if (isLoading) {
     return (
       <div className={cn('relative', className)}>
-        {/* Loading shimmer effect */}
-        <div className="absolute inset-0 bg-linear-to-r from-transparent via-zinc-800/20 to-transparent animate-shimmer" />
-        <TimelineCardSkeleton isFirst />
-        <TimelineCardSkeleton />
-        <TimelineCardSkeleton isLast />
+        {/* Shimmer Skeleton Loading State */}
+        <div className="space-y-4">
+          {/* Hook Skeleton */}
+          <div className="relative flex gap-4">
+            <div className="flex flex-col items-center">
+              <div className="w-10 h-10 rounded-full bg-linear-to-br from-pink-500/30 to-purple-500/30 animate-pulse" />
+              <div className="w-0.5 flex-1 min-h-8 bg-zinc-700/50" />
+            </div>
+            <div className="flex-1 pb-6">
+              <div className="h-6 w-20 bg-zinc-800 rounded-full mb-3 animate-pulse" />
+              <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 overflow-hidden relative">
+                <div className="h-5 w-3/4 bg-zinc-800 rounded mb-2 animate-pulse" />
+                <div className="h-4 w-1/2 bg-zinc-800/50 rounded animate-pulse" />
+                {/* Shimmer overlay */}
+                <div className="absolute inset-0 bg-linear-to-r from-transparent via-zinc-700/20 to-transparent animate-shimmer" />
+              </div>
+            </div>
+          </div>
+          
+          {/* Body Skeleton */}
+          <div className="relative flex gap-4">
+            <div className="flex flex-col items-center">
+              <div className="w-0.5 h-4 bg-zinc-700/50" />
+              <div className="w-10 h-10 rounded-full bg-zinc-800 animate-pulse" />
+              <div className="w-0.5 flex-1 min-h-8 bg-zinc-700/50" />
+            </div>
+            <div className="flex-1 pb-6">
+              <div className="h-6 w-24 bg-zinc-800 rounded-full mb-3 animate-pulse" />
+              <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 overflow-hidden relative">
+                <div className="space-y-3">
+                  <div className="h-4 w-full bg-zinc-800 rounded animate-pulse" />
+                  <div className="h-4 w-5/6 bg-zinc-800 rounded animate-pulse" />
+                  <div className="h-4 w-4/5 bg-zinc-800 rounded animate-pulse" />
+                  <div className="h-4 w-3/4 bg-zinc-800/50 rounded animate-pulse" />
+                </div>
+                <div className="absolute inset-0 bg-linear-to-r from-transparent via-zinc-700/20 to-transparent animate-shimmer" />
+              </div>
+            </div>
+          </div>
+          
+          {/* CTA Skeleton */}
+          <div className="relative flex gap-4">
+            <div className="flex flex-col items-center">
+              <div className="w-0.5 h-4 bg-zinc-700/50" />
+              <div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-500/30 to-blue-500/30 animate-pulse" />
+            </div>
+            <div className="flex-1">
+              <div className="h-6 w-32 bg-zinc-800 rounded-full mb-3 animate-pulse" />
+              <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 overflow-hidden relative">
+                <div className="h-5 w-2/3 bg-zinc-800 rounded animate-pulse" />
+                <div className="absolute inset-0 bg-linear-to-r from-transparent via-zinc-700/20 to-transparent animate-shimmer" />
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Loading text */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-zinc-500 animate-pulse">
+            ✨ Đang tạo kịch bản viral cho bạn...
+          </p>
+        </div>
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
+      <div className="flex flex-col items-center justify-center py-12 md:py-20 text-center px-4">
+        {/* Animated Icon */}
         <div className="relative mb-6">
-          <div className="w-20 h-20 rounded-full bg-linear-to-br from-pink-500/20 to-purple-500/20 flex items-center justify-center animate-pulse">
-            <span className="text-4xl">✨</span>
+          <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-linear-to-br from-pink-500/20 via-purple-500/20 to-blue-500/20 flex items-center justify-center">
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-linear-to-br from-pink-500/30 to-purple-500/30 flex items-center justify-center animate-pulse">
+              <span className="text-4xl md:text-5xl">🎬</span>
+            </div>
           </div>
-          <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
-            <span className="text-xl">🎬</span>
+          {/* Floating sparkles */}
+          <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-purple-500/30 flex items-center justify-center animate-bounce">
+            <span className="text-lg">✨</span>
+          </div>
+          <div className="absolute -bottom-1 -left-3 w-6 h-6 rounded-full bg-pink-500/30 flex items-center justify-center animate-bounce" style={{ animationDelay: '0.2s' }}>
+            <span className="text-sm">⚡</span>
           </div>
         </div>
-        <h3 className="text-xl font-semibold text-zinc-200 mb-2">
-          Sẵn sàng tạo nội dung viral?
+        
+        {/* Title */}
+        <h3 className="text-xl md:text-2xl font-bold text-white mb-3">
+          Chưa có kịch bản nào
         </h3>
-        <p className="text-sm text-zinc-400 max-w-sm leading-relaxed">
-          Điền thông tin bên trái và nhấn &ldquo;Tạo Kịch Bản&rdquo; để AI bắt đầu viết kịch bản triệu views cho bạn
+        
+        {/* Description */}
+        <p className="text-sm md:text-base text-zinc-400 max-w-sm leading-relaxed mb-6">
+          Điền thông tin bên {typeof window !== 'undefined' && window.innerWidth < 768 ? 'trên' : 'trái'} và nhấn 
+          <span className="text-pink-400 font-medium"> &ldquo;Tạo Kịch Bản&rdquo; </span> 
+          để AI bắt đầu viết nội dung viral cho bạn!
         </p>
-        <div className="mt-6 flex gap-2">
-          <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce" />
-          <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+        
+        {/* Animated dots */}
+        <div className="flex gap-2">
+          <div className="w-2.5 h-2.5 bg-pink-500 rounded-full animate-bounce" />
+          <div className="w-2.5 h-2.5 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+          <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+        </div>
+        
+        {/* Tips */}
+        <div className="mt-8 p-4 rounded-xl bg-zinc-900/50 border border-zinc-800/50 max-w-sm">
+          <p className="text-xs md:text-sm text-zinc-500 leading-relaxed">
+            💡 <strong className="text-zinc-400">Mẹo:</strong> Chủ đề càng cụ thể, kịch bản càng chất lượng. 
+            Thử thêm góc nhìn độc đáo hoặc số liệu cụ thể!
+          </p>
         </div>
       </div>
     );

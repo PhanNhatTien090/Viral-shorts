@@ -4,11 +4,16 @@ import { db } from '@/lib/db';
 import { scripts } from '@/lib/db/schema';
 
 export async function POST(req: Request) {
+  console.log('📝 [SAVE] Starting script save...');
+  
   try {
     // 🔐 Verify user is authenticated
     const { userId } = await auth();
     
+    console.log('👤 [SAVE] User ID:', userId || 'NOT LOGGED IN');
+    
     if (!userId) {
+      console.warn('⚠️ [SAVE] Rejected - User not logged in');
       return NextResponse.json(
         { error: 'Unauthorized. Please sign in to save scripts.' },
         { status: 401 }
@@ -18,9 +23,19 @@ export async function POST(req: Request) {
     // Parse request body
     const body = await req.json();
     const { scriptData, topic, platform, vibe } = body;
+    
+    console.log('📦 [SAVE] Request body:', {
+      hasScriptData: !!scriptData,
+      topic,
+      platform,
+      vibe,
+      hookLength: scriptData?.hook?.length || 0,
+      scriptLength: scriptData?.script?.length || 0,
+    });
 
     // Validate required fields
     if (!scriptData || !scriptData.hook || !scriptData.script || !scriptData.cta) {
+      console.error('❌ [SAVE] Validation failed - Missing required fields');
       return NextResponse.json(
         { error: 'Missing required script data (hook, script, cta)' },
         { status: 400 }
@@ -32,6 +47,11 @@ export async function POST(req: Request) {
 
     // Extract viral score from analysis if available
     const viralScore = scriptData.analysis?.viralScore || null;
+
+    console.log('💾 [SAVE] Inserting into database...');
+    console.log('   - userId:', userId);
+    console.log('   - title:', title);
+    console.log('   - viralScore:', viralScore);
 
     // Insert into database
     const [savedScript] = await db.insert(scripts).values({
@@ -48,7 +68,8 @@ export async function POST(req: Request) {
       viralScore,
     }).returning();
 
-    console.log(`✅ Script saved for user ${userId}:`, savedScript.id);
+    console.log('✅ [SAVE] SUCCESS! Script saved with ID:', savedScript.id);
+    console.log('   - Created at:', savedScript.createdAt);
 
     return NextResponse.json({
       success: true,
@@ -57,7 +78,10 @@ export async function POST(req: Request) {
     });
 
   } catch (error) {
-    console.error('❌ Error saving script:', error);
+    console.error('❌ [SAVE] DATABASE ERROR:', error);
+    console.error('   - Error type:', error instanceof Error ? error.constructor.name : typeof error);
+    console.error('   - Error message:', error instanceof Error ? error.message : String(error));
+    
     return NextResponse.json(
       { error: 'Failed to save script. Please try again.' },
       { status: 500 }

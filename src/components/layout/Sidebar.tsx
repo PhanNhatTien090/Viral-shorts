@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,6 +9,7 @@ import {
   SignedOut,
   UserButton,
   SignInButton,
+  useUser,
 } from '@clerk/nextjs';
 import {
   Sparkles,
@@ -27,13 +28,12 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 
 interface HistoryItem {
-  id: string;
+  id: number;
   title: string;
-  createdAt: Date;
+  createdAt: string;
 }
 
 interface SidebarProps {
-  historyItems?: HistoryItem[];
   onNewScript?: () => void;
   className?: string;
 }
@@ -45,9 +45,43 @@ const navItems = [
   { icon: Settings, label: 'Settings', href: '/settings' },
 ];
 
-export function Sidebar({ historyItems = [], onNewScript, className }: SidebarProps) {
+export function Sidebar({ onNewScript, className }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   const pathname = usePathname();
+  const { isSignedIn } = useUser();
+
+  // 🔄 Fetch history when user is signed in
+  useEffect(() => {
+    async function fetchHistory() {
+      if (!isSignedIn) {
+        setHistoryItems([]);
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/scripts/get', {
+          credentials: 'include',
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          // Take only first 10 for sidebar
+          const items = (data.scripts || []).slice(0, 10).map((s: { id: number; title: string; createdAt: string }) => ({
+            id: s.id,
+            title: s.title,
+            createdAt: s.createdAt,
+          }));
+          setHistoryItems(items);
+          console.log('📚 [SIDEBAR] Loaded', items.length, 'history items');
+        }
+      } catch (error) {
+        console.error('❌ [SIDEBAR] Failed to fetch history:', error);
+      }
+    }
+
+    fetchHistory();
+  }, [isSignedIn, pathname]); // Refetch when pathname changes (after save)
 
   return (
     <motion.aside
@@ -127,22 +161,32 @@ export function Sidebar({ historyItems = [], onNewScript, className }: SidebarPr
           {/* History Section */}
           {!collapsed && (
             <div className="mt-6">
-              <div className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+              <Link 
+                href="/history"
+                className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-300 transition-colors"
+              >
                 <History className="h-4 w-4" />
                 <span>History</span>
-              </div>
+              </Link>
               <ScrollArea className="h-[calc(100vh-380px)]">
                 <ul className="space-y-1 mt-2">
-                  {historyItems.length === 0 ? (
+                  {!isSignedIn ? (
+                    <li className="px-3 py-2 text-xs text-zinc-600 italic">
+                      Sign in to see history
+                    </li>
+                  ) : historyItems.length === 0 ? (
                     <li className="px-3 py-2 text-xs text-zinc-600 italic">
                       No recent scripts
                     </li>
                   ) : (
-                    historyItems.slice(0, 10).map((item) => (
+                    historyItems.map((item) => (
                       <li key={item.id}>
-                        <button className="w-full text-left px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors truncate">
+                        <Link 
+                          href="/history"
+                          className="block w-full text-left px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors truncate"
+                        >
                           {item.title}
-                        </button>
+                        </Link>
                       </li>
                     ))
                   )}

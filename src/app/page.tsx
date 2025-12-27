@@ -2,13 +2,14 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Sparkles, Loader2, Zap, Settings2, LayoutTemplate, X, Lock } from 'lucide-react';
+import { Sparkles, Loader2, Zap, Settings2, LayoutTemplate, X, Lock, ChevronDown, ChevronUp, Copy, Check, Video } from 'lucide-react';
 import { experimental_useObject as useObject } from '@ai-sdk/react';
 import { z } from 'zod';
 import { useUser, SignInButton } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -23,12 +24,12 @@ import { viralHooks } from '@/data/viral-hooks';
 import { useGuestUsage } from '@/hooks/useGuestUsage';
 
 // CRITICAL: Must match backend schema EXACTLY
-// 🧠 Advanced Schema with Viral Analysis (analysis is optional for graceful degradation)
+// 🧠 Schema with optional visual prompt (only when includeVisuals = true)
 const schema = z.object({
   hook: z.string(),
   script: z.string(),
   cta: z.string(),
-  visualPrompt: z.string(),
+  visualPrompt: z.string().optional(),
   analysis: z.object({
     hookPsychology: z.string(),
     viralScore: z.number(),
@@ -36,6 +37,93 @@ const schema = z.object({
     viralFramework: z.string(),
   }).optional(),
 });
+
+// 🎬 Collapsible Visual Prompt Card Component
+function VisualPromptCard({ visualPrompt }: { visualPrompt: string }) {
+  const [isExpanded, setIsExpanded] = useState(true);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(visualPrompt);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="rounded-2xl bg-linear-to-br from-purple-500/10 via-blue-500/10 to-pink-500/10 border border-purple-500/20 backdrop-blur-sm overflow-hidden">
+      {/* Header - Clickable to toggle */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between p-4 md:p-5 hover:bg-white/5 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-purple-500/20">
+            <span className="text-lg">🎬</span>
+          </div>
+          <div className="text-left">
+            <h3 className="text-sm md:text-base font-semibold text-white">
+              Visual Prompt (AI Video)
+            </h3>
+            <p className="text-xs text-zinc-400">
+              Tối ưu cho Kling AI, Runway, Luma
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="px-2 py-0.5 rounded-full text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30">
+            Copy & Paste
+          </span>
+          {isExpanded ? (
+            <ChevronUp className="h-5 w-5 text-zinc-400" />
+          ) : (
+            <ChevronDown className="h-5 w-5 text-zinc-400" />
+          )}
+        </div>
+      </button>
+
+      {/* Collapsible Content */}
+      {isExpanded && (
+        <div className="px-4 md:px-5 pb-4 md:pb-5 space-y-3">
+          {/* Copy Button */}
+          <div className="flex justify-end">
+            <button
+              onClick={handleCopy}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
+                copied
+                  ? 'bg-green-500/20 text-green-400'
+                  : 'bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700'
+              )}
+            >
+              {copied ? (
+                <>
+                  <Check className="h-3.5 w-3.5" /> Đã copy
+                </>
+              ) : (
+                <>
+                  <Copy className="h-3.5 w-3.5" /> Copy Prompt
+                </>
+              )}
+            </button>
+          </div>
+          
+          {/* Prompt Content */}
+          <div className="p-3 md:p-4 rounded-xl bg-zinc-950/80 border border-zinc-800 font-mono text-xs md:text-sm text-zinc-300 leading-relaxed">
+            {visualPrompt}
+          </div>
+          
+          {/* Tip */}
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+            <span className="text-sm">💡</span>
+            <p className="text-xs text-yellow-200/80 leading-relaxed">
+              Copy đoạn tiếng Anh và dán trực tiếp vào Kling AI, Runway, hoặc Luma để tạo video.
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // Pill toggle button component
 function PillOption({
@@ -117,6 +205,7 @@ function HomeContent() {
   const [topic, setTopic] = useState(initialTemplate && patternParam ? decodeURIComponent(patternParam) : '');
   const [vibe, setVibe] = useState('');
   const [platform, setPlatform] = useState('');
+  const [includeVisuals, setIncludeVisuals] = useState(false);
   const [healthStatus, setHealthStatus] = useState<'checking' | 'healthy' | 'unhealthy'>('checking');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [activeTemplate, setActiveTemplate] = useState<string | null>(initialTemplate ? templateId : null);
@@ -200,8 +289,8 @@ function HomeContent() {
       return; // Button should be disabled, but double-check
     }
 
-    console.log('Submitting:', { topic, vibe, platform });
-    submit({ topic: topic.trim(), vibe, platform });
+    console.log('Submitting:', { topic, vibe, platform, includeVisuals });
+    submit({ topic: topic.trim(), vibe, platform, includeVisuals });
     
     // 👻 Increment guest usage counter (only for guests)
     if (!isSignedIn) {
@@ -211,14 +300,17 @@ function HomeContent() {
 
   const handleCopyAll = () => {
     if (object) {
-      const fullText = `HOOK:\n${object.hook}\n\nNỘI DUNG:\n${object.script}\n\nKÊU GỌI HÀNH ĐỘNG:\n${object.cta}\n\nGỢI Ý HÌNH ẢNH:\n${object.visualPrompt}`;
+      const visualText = object.visualPrompt 
+        ? `\n\n🎬 VISUAL PROMPT:\n\n🎥 Video Generation (Runway/Kling/Sora):\n${object.visualPrompt}`
+        : '';
+      const fullText = `HOOK:\n${object.hook}\n\nNỘI DUNG:\n${object.script}\n\nKÊU GỌI HÀNH ĐỘNG:\n${object.cta}${visualText}`;
       navigator.clipboard.writeText(fullText);
     }
   };
 
   const handleRegenerate = () => {
     if (topic && vibe && platform) {
-      submit({ topic: topic.trim(), vibe, platform });
+      submit({ topic: topic.trim(), vibe, platform, includeVisuals });
     }
   };
 
@@ -230,7 +322,7 @@ function HomeContent() {
     }
 
     setSaveStatus('saving');
-    setSaveMessage('');
+    setSaveMessage('Đang lưu kịch bản...');
 
     try {
       const response = await fetch('/api/scripts/save', {
@@ -241,7 +333,7 @@ function HomeContent() {
             hook: object.hook,
             script: object.script,
             cta: object.cta,
-            visualPrompt: object.visualPrompt,
+            visualPrompt: object.visualPrompt || '',
             analysis: object.analysis,
           },
           topic,
@@ -254,8 +346,11 @@ function HomeContent() {
 
       if (response.ok) {
         setSaveStatus('success');
-        setSaveMessage('Đã lưu vào thư viện!');
+        setSaveMessage('✅ Đã lưu vào thư viện!');
         console.log('✅ Script saved:', data);
+        
+        // Refresh router to update history sidebar
+        router.refresh();
         
         // Reset status after 3 seconds
         setTimeout(() => {
@@ -268,7 +363,7 @@ function HomeContent() {
     } catch (error) {
       console.error('❌ Save error:', error);
       setSaveStatus('error');
-      setSaveMessage('Lỗi khi lưu. Vui lòng thử lại.');
+      setSaveMessage('❌ Lỗi khi lưu. Vui lòng thử lại.');
       
       // Reset status after 3 seconds
       setTimeout(() => {
@@ -448,6 +543,24 @@ function HomeContent() {
                 </div>
               </div>
 
+              {/* 🎬 Visual Prompt Toggle - Token Optimization */}
+              <div className="flex items-center justify-between p-4 rounded-xl bg-zinc-950/50 border border-zinc-800">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-linear-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
+                    <Video className="h-4 w-4 text-purple-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-zinc-200">Tạo kèm Prompt Video</p>
+                    <p className="text-xs text-zinc-500">Prompt cho Runway/Kling/Sora</p>
+                  </div>
+                </div>
+                <Switch 
+                  checked={includeVisuals} 
+                  onCheckedChange={setIncludeVisuals}
+                  disabled={isLoading}
+                />
+              </div>
+
               {/* Advanced Settings Toggle */}
               <button
                 type="button"
@@ -588,23 +701,9 @@ function HomeContent() {
               />
             </div>
 
-            {/* Visual Prompt Card (if available) */}
+            {/* 🎬 Visual Prompts Section - Enhanced for AI Tools */}
             {object?.visualPrompt && !isLoading && (
-              <div className="p-6 rounded-2xl bg-linear-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20 backdrop-blur-sm">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-purple-500/20 shrink-0">
-                    <span className="text-lg">🎬</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-purple-300 mb-2">
-                      Gợi ý hình ảnh & B-roll
-                    </h3>
-                    <p className="text-sm text-zinc-300 leading-relaxed">
-                      {object.visualPrompt}
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <VisualPromptCard visualPrompt={object.visualPrompt} />
             )}
           </div>
         </div>

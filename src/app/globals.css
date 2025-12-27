@@ -130,6 +130,66 @@ body {
   }
 }
 
+/* 📱 Mobile-First Typography Improvements */
+@layer base {
+  html {
+    /* Prevent iOS text zoom on input focus */
+    -webkit-text-size-adjust: 100%;
+    /* Better line height for readability */
+    line-height: 1.6;
+  }
+  
+  body {
+    /* Minimum font size 14px on mobile for accessibility */
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  
+  @media (min-width: 768px) {
+    body {
+      font-size: 16px;
+      line-height: 1.5;
+    }
+  }
+  
+  /* Ensure minimum touch target sizes */
+  button, 
+  a, 
+  input, 
+  select, 
+  textarea {
+    min-height: 44px;
+  }
+  
+  @media (min-width: 768px) {
+    button, 
+    a, 
+    input, 
+    select, 
+    textarea {
+      min-height: auto;
+    }
+  }
+  
+  /* Better text rendering on mobile */
+  p, li, span {
+    font-size: inherit;
+    line-height: 1.6;
+  }
+  
+  /* Ensure small text is never too small on mobile */
+  .text-xs {
+    font-size: 0.8125rem; /* 13px instead of 12px */
+    line-height: 1.5;
+  }
+  
+  @media (min-width: 768px) {
+    .text-xs {
+      font-size: 0.75rem; /* 12px on desktop */
+    }
+  }
+}
+
 /* Shimmer animation for loading states */
 @keyframes shimmer {
   0% {

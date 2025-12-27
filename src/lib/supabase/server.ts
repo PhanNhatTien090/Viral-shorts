@@ -1,31 +1,36 @@
-// Supabase server-side client configuration
-
 /**
- * This file will contain your Supabase server client setup
- * Use this for server components and API routes
- * 
- * Installation:
- * npm install @supabase/supabase-js @supabase/ssr
+ * Supabase Server Client
+ * Use this in server components and API routes
  */
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
-// Example structure (uncomment when ready):
-// import { createServerClient } from '@supabase/ssr'
-// import { cookies } from 'next/headers'
-// 
-// export const createClient = () => {
-//   const cookieStore = cookies()
-//   
-//   return createServerClient(
-//     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-//     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-//     {
-//       cookies: {
-//         get(name: string) {
-//           return cookieStore.get(name)?.value
-//         },
-//       },
-//     }
-//   )
-// }
+export async function createClient() {
+  const cookieStore = await cookies();
 
-export {};
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value, ...options });
+          } catch {
+            // Handle cookies in edge runtime
+          }
+        },
+        remove(name: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value: '', ...options });
+          } catch {
+            // Handle cookies in edge runtime
+          }
+        },
+      },
+    }
+  );
+}

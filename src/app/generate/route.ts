@@ -59,53 +59,29 @@ performHealthCheck();
 // Cho phép request chạy tối đa 30s (tránh bị timeout)
 export const maxDuration = 30;
 
-// 🧠 ADVANCED SCHEMA: Script + Viral Analysis (Chain-of-Thought output)
-const scriptSchema = z.object({
+// 🧠 BASE SCHEMA: Script + Viral Analysis (without visuals - saves tokens)
+const baseScriptSchema = z.object({
   // Core Script Content
   hook: z.string().describe('Câu nói mở đầu cực sốc (0-3 giây) - Phải trigger cảm xúc mạnh'),
   script: z.string().describe('Nội dung chính của video (3-20 giây), chia thành các gạch đầu dòng ngắn gọn'),
   cta: z.string().describe('Câu kêu gọi hành động cuối video - Khuyến khích tương tác'),
-  visualPrompt: z.string().describe('Mô tả hình ảnh cho AI tạo video (bằng tiếng Anh)'),
   
-  // 🔥 NEW: Viral Analysis Layer
+  // 🔥 Viral Analysis Layer
   analysis: z.object({
-    hookPsychology: z.string().describe('Giải thích TẠI SAO hook này hiệu quả - Tối đa 15 từ. VD: "Dùng Curiosity Gap", "Trigger FOMO"'),
-    viralScore: z.number().min(1).max(10).describe('Điểm viral từ 1-10 dựa trên tiềm năng lan truyền'),
-    audienceInsight: z.string().describe('Đối tượng mục tiêu cụ thể. VD: "Gen Z sinh viên", "Các bà mẹ bỉm sữa"'),
-    viralFramework: z.string().describe('Framework đã sử dụng: Polarization, Negative Hook, Transformation, Curiosity Gap, Social Proof'),
+    hookPsychology: z.string().describe('Giải thích TẠI SAO hook này hiệu quả - Tối đa 15 từ'),
+    viralScore: z.number().min(1).max(10).describe('Điểm viral từ 1-10'),
+    audienceInsight: z.string().describe('Đối tượng mục tiêu cụ thể'),
+    viralFramework: z.string().describe('Framework đã sử dụng'),
   }),
 });
 
-type ScriptResult = z.infer<typeof scriptSchema>;
+// 🎬 FULL SCHEMA: With Visual Prompt (when includeVisuals = true)
+const fullScriptSchema = baseScriptSchema.extend({
+  visualPrompt: z.string().describe('Prompt tiếng Anh tối ưu cho Kling/Runway/Luma để tạo video AI. Mô tả chi tiết: subject, scene, camera movement, lighting, mood, color. VD: "Young Vietnamese woman in modern cafe, warm lighting, slow zoom in, cinematic color grading, 4k"'),
+});
 
-/**
- * Helper function to create a streaming response from cached data
- * ✅ FIXED: Send complete object immediately, no progressive streaming for cache
- */
-function createCachedStream(cachedData: ScriptResult): ReadableStream<Uint8Array> {
-  const encoder = new TextEncoder();
-  
-  return new ReadableStream({
-    async start(controller) {
-      try {
-        console.log('🔄 Streaming cached data to frontend...');
-        console.log('📦 Cached data:', JSON.stringify(cachedData, null, 2));
-        
-        // Send the complete cached object at once
-        // AI SDK streamObject format: each line is "0:{partialObject}\n"
-        const chunk = `0:${JSON.stringify(cachedData)}\n`;
-        console.log(`   └─ Sending complete object: ${chunk.substring(0, 150)}...`);
-        controller.enqueue(encoder.encode(chunk));
-        
-        console.log('✅ Cache stream completed');
-        controller.close();
-      } catch (error) {
-        console.error('❌ Error streaming cached data:', error);
-        controller.error(error);
-      }
-    },
-  });
-}
+type BaseScriptResult = z.infer<typeof baseScriptSchema>;
+type FullScriptResult = z.infer<typeof fullScriptSchema>;
 
 export async function POST(req: Request) {
   const startTime = Date.now();
@@ -130,9 +106,9 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { topic, vibe, platform } = body;
+    const { topic, vibe, platform, includeVisuals = false } = body;
 
-    console.log('📥 API received:', { topic, vibe, platform, isGuest });
+    console.log('📥 API received:', { topic, vibe, platform, includeVisuals, isGuest });
 
     // Validate input
     if (!topic || !vibe || !platform) {
@@ -142,8 +118,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // 🔑 STEP A: Create normalized cache key
-    const cacheKey = `${topic.toLowerCase().trim()}-${vibe}-${platform}`;
+    // 🔑 STEP A: Create normalized cache key (include visuals flag)
+    const cacheKey = `${topic.toLowerCase().trim()}-${vibe}-${platform}-v${includeVisuals ? '1' : '0'}`;
     console.log('🔍 Cache key:', cacheKey);
 
     // 🔍 STEP B: Check database cache (non-blocking on error)
@@ -158,7 +134,7 @@ export async function POST(req: Request) {
         const elapsedTime = Date.now() - startTime;
         console.log(`✅ CACHE HIT - Returning cached result (${elapsedTime}ms)`);
         
-        const cachedData = cached[0].data as ScriptResult;
+        const cachedData = cached[0].data as BaseScriptResult | FullScriptResult;
 
         // ✅ FIXED: Return raw JSON text stream (same as streamObject.toTextStreamResponse)
         // experimental_useObject expects progressive JSON text chunks, not prefixed format
@@ -196,11 +172,22 @@ export async function POST(req: Request) {
     }
 
     // 🤖 STEP C: Call Google Gemini API with Director Mode Prompt
-    console.log('🚀 Calling Gemini 2.5 Flash with Director Mode...');
+    // Choose schema based on includeVisuals flag
+    const activeSchema = includeVisuals ? fullScriptSchema : baseScriptSchema;
+    console.log(`🚀 Calling Gemini 2.5 Flash (includeVisuals: ${includeVisuals})...`);
+    
+    // Build visual instruction if needed
+    const visualInstruction = includeVisuals ? `
+5. VISUAL PROMPT (Tiếng Anh - cho AI Video Tools):
+   - Mô tả chi tiết scene bằng tiếng Anh
+   - Bao gồm: subject, environment, camera movement, lighting, mood, color palette
+   - Tối ưu cho Kling AI, Runway, Luma
+   - VD: "Young Vietnamese entrepreneur in modern coffee shop, golden hour lighting, slow dolly in, warm color grading, cinematic 4k, shallow depth of field"
+` : '';
     
     const result = streamObject({
       model: google('gemini-2.5-flash'),
-      schema: scriptSchema,
+      schema: activeSchema,
       prompt: `
 Bạn là "Viral Short Architect" - Kiến trúc sư Nội dung Viral chuyên nghiệp.
 Bạn hiểu sâu về thuật toán TikTok/Reels/Shorts và tâm lý người xem Việt Nam.
@@ -212,54 +199,30 @@ Bạn hiểu sâu về thuật toán TikTok/Reels/Shorts và tâm lý người x
 - Nền tảng: ${platform}
 ═══════════════════════════════════════════════════════════════
 
-🧠 QUY TRÌNH SUY LUẬN CỦA BẠN (Chain-of-Thought):
+🧠 QUY TRÌNH SUY LUẬN (Chain-of-Thought):
 
-BƯỚC 1 - PHÂN TÍCH TÂM LÝ:
-Xác định pain point hoặc desire cốt lõi của chủ đề này. Người xem đang khao khát điều gì?
-
-BƯỚC 2 - CHỌN VIRAL FRAMEWORK:
-Chọn 1 trong các kỹ thuật sau phù hợp nhất với chủ đề:
-• "Polarization" - Chọn phe trong cuộc tranh luận (VD: "Team A hay Team B?")
-• "Negative Hook" - Cảnh báo về sai lầm (VD: "Đừng bao giờ làm điều này...")
-• "Transformation" - Trước vs Sau, thay đổi đáng kinh ngạc
-• "Curiosity Gap" - Tạo khoảng trống tò mò (VD: "Bí mật mà 99% người không biết")
-• "Social Proof" - Dùng số liệu, bằng chứng đám đông
-
-BƯỚC 3 - TẠO HOOK ĐÁNH THẲNG VÀO CẢM XÚC:
-Hook PHẢI trigger 1 trong các cảm xúc mạnh: Bất ngờ, Sợ hãi, Tham lam, Hài hước, Tức giận, Tò mò.
-
-BƯỚC 4 - TỰ ĐÁNH GIÁ:
-Chấm điểm viral từ 1-10. Giải thích tại sao hook này sẽ được thuật toán đẩy mạnh.
+1. PHÂN TÍCH: Xác định pain point/desire cốt lõi của chủ đề
+2. CHỌN FRAMEWORK: Polarization, Negative Hook, Transformation, Curiosity Gap, hoặc Social Proof
+3. TẠO HOOK: Trigger cảm xúc mạnh (Bất ngờ, Sợ hãi, Tham lam, Hài hước, Tức giận, Tò mò)
+4. TỰ ĐÁNH GIÁ: Chấm điểm viral 1-10
 
 ═══════════════════════════════════════════════════════════════
 📋 YÊU CẦU OUTPUT:
 
-1. HOOK (0-3 giây): 
-   - Cực ngắn, đánh thẳng vào cảm xúc
-   - Dùng ngôn ngữ Gen Z Việt Nam tự nhiên
-   - KHÔNG chào hỏi, KHÔNG giới thiệu
+1. HOOK (0-3 giây): Cực ngắn, đánh thẳng vào cảm xúc, ngôn ngữ Gen Z tự nhiên
 
-2. SCRIPT (3-20 giây):
-   - Chia thành 3-4 bullet points ngắn gọn
-   - Mỗi điểm là 1 "đòn tâm lý" riêng
-   - Pace nhanh, không rườm rà
+2. SCRIPT (3-20 giây): 3-4 bullet points ngắn gọn, pace nhanh
 
-3. CTA (Kết thúc):
-   - Kêu gọi hành động cụ thể (comment, share, follow)
-   - Tạo FOMO hoặc urgency
+3. CTA: Kêu gọi hành động cụ thể, tạo FOMO/urgency
 
-4. VISUAL PROMPT (Tiếng Anh):
-   - Cinematic shot description
-   - Lighting, mood, camera angle
-
-5. ANALYSIS (Phân tích Viral):
-   - hookPsychology: Giải thích TẠI SAO hook hiệu quả (tối đa 15 từ)
+4. ANALYSIS:
+   - hookPsychology: Tại sao hook hiệu quả (tối đa 15 từ)
    - viralScore: Điểm 1-10
    - audienceInsight: Đối tượng cụ thể
    - viralFramework: Framework đã dùng
-
+${visualInstruction}
 ═══════════════════════════════════════════════════════════════
-⚡ BẮT ĐẦU TẠO NGAY - KHÔNG NÓI THÊM GÌ:
+⚡ BẮT ĐẦU TẠO NGAY:
       `.trim(),
       
       // 💾 STEP D: Save to cache when generation completes (only for logged-in users)
@@ -287,7 +250,7 @@ Chấm điểm viral từ 1-10. Giải thích tại sao hook này sẽ được 
         try {
           await db.insert(cachedResults).values({
             cacheKey,
-            data: object as ScriptResult,
+            data: object as BaseScriptResult | FullScriptResult,
           });
           console.log('💾 Saved to cache:', cacheKey);
         } catch (saveError) {
