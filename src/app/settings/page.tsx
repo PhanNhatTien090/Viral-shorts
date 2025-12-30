@@ -1,6 +1,6 @@
 'use client';
 
-import { Sidebar, MainLayout } from '@/components/layout';
+import { MainLayout } from '@/components/layout';
 import { Settings, User, Bell, Palette, Shield } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
 
@@ -9,13 +9,7 @@ export default function SettingsPage() {
 
   return (
     <MainLayout>
-      {/* Sidebar - hidden on mobile */}
-      <div className="hidden lg:block">
-        <Sidebar />
-      </div>
-      
-      {/* Main content area */}
-      <main className="lg:ml-64 min-h-screen transition-all duration-300 ease-in-out">
+      <div className="min-h-screen">
         <div className="p-4 lg:p-6 xl:p-8">
           <div className="max-w-4xl mx-auto">
             {/* Header */}
@@ -78,7 +72,7 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </MainLayout>
   );
 }

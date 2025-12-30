@@ -9,7 +9,7 @@ import {
   type HookCategory,
   type ViralHook 
 } from '@/data/viral-hooks';
-import { Sidebar, MainLayout } from '@/components/layout';
+import { MainLayout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { 
@@ -18,8 +18,22 @@ import {
   Flame, 
   Brain,
   LayoutTemplate,
-  Filter
+  Filter,
+  BookOpen,
+  DollarSign,
+  Smile,
+  BookMarked,
+  Zap
 } from 'lucide-react';
+
+// Icon mapping for categories
+const categoryIcons: Record<HookCategory, React.ElementType> = {
+  education: BookOpen,
+  sales: DollarSign,
+  funny: Smile,
+  storytelling: BookMarked,
+  motivation: Zap,
+};
 
 // Template Card Component
 function TemplateCard({ hook, onUse }: { hook: ViralHook; onUse: (hook: ViralHook) => void }) {
@@ -47,12 +61,18 @@ function TemplateCard({ hook, onUse }: { hook: ViralHook; onUse: (hook: ViralHoo
 
       {/* Category Badge */}
       <div className="mb-3">
-        <span className={cn(
-          'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border',
-          category.color
-        )}>
-          {category.emoji} {category.label}
-        </span>
+        {(() => {
+          const Icon = categoryIcons[hook.category];
+          return (
+            <span className={cn(
+              'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border',
+              category.color
+            )}>
+              <Icon className="h-3 w-3" />
+              {category.label}
+            </span>
+          );
+        })()}
       </div>
 
       {/* Title */}
@@ -131,8 +151,9 @@ function FilterTab({
     <button
       onClick={onClick}
       className={cn(
-        'px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
+        'inline-flex items-center gap-2 px-4 py-2.5 h-10 rounded-full text-sm font-medium transition-all duration-200',
         'border focus:outline-none focus:ring-2 focus:ring-pink-500/50',
+        'shrink-0 whitespace-nowrap',
         active
           ? 'bg-linear-to-r from-pink-500 to-purple-500 text-white border-transparent shadow-lg shadow-pink-500/20'
           : 'bg-zinc-900/50 text-zinc-400 border-zinc-700 hover:bg-zinc-800 hover:text-zinc-200'
@@ -154,20 +175,14 @@ export default function TemplatesPage() {
 
   // Handle using a template
   const handleUseTemplate = (hook: ViralHook) => {
-    // Redirect to home page with template query param
+    // Redirect to dashboard page with template query param
     const encodedPattern = encodeURIComponent(hook.patternVi);
-    router.push(`/?template=${hook.id}&pattern=${encodedPattern}`);
+    router.push(`/dashboard?template=${hook.id}&pattern=${encodedPattern}`);
   };
 
   return (
     <MainLayout>
-      {/* Sidebar - hidden on mobile */}
-      <div className="hidden lg:block">
-        <Sidebar />
-      </div>
-
-      {/* Main content */}
-      <main className="lg:ml-64 min-h-screen transition-all duration-300 ease-in-out">
+      <div className="min-h-screen">
         <div className="p-4 lg:p-8 max-w-7xl mx-auto">
           
           {/* Header */}
@@ -213,13 +228,15 @@ export default function TemplatesPage() {
             </FilterTab>
             {hookCategories.map(cat => {
               const info = categoryLabels[cat];
+              const Icon = categoryIcons[cat];
               return (
                 <FilterTab
                   key={cat}
                   active={activeCategory === cat}
                   onClick={() => setActiveCategory(cat)}
                 >
-                  {info.emoji} {info.label}
+                  <Icon className="h-4 w-4" />
+                  {info.label}
                 </FilterTab>
               );
             })}
@@ -259,7 +276,7 @@ export default function TemplatesPage() {
             </p>
           </div>
         </div>
-      </main>
+      </div>
     </MainLayout>
   );
 }

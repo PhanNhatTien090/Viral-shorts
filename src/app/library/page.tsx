@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Sidebar, MainLayout } from '@/components/layout';
+import { MainLayout } from '@/components/layout';
 import { Library, Lock, Loader2, Calendar, Zap, Copy, Check, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Script } from '@/lib/db/schema';
@@ -34,30 +34,30 @@ function ScriptCard({ script, onDelete }: { script: Script; onDelete?: (id: numb
   });
 
   return (
-    <div className="p-5 rounded-xl bg-zinc-900/60 border border-zinc-800 hover:border-purple-500/30 transition-colors group">
+    <div className="p-4 sm:p-5 rounded-xl bg-zinc-900/60 border border-zinc-800 hover:border-purple-500/30 transition-colors group">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-3">
+      <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex-1 min-w-0">
-          <h3 className="text-base font-semibold text-white truncate">
+          <h3 className="text-sm sm:text-base font-semibold text-white line-clamp-2">
             {script.title}
           </h3>
-          <div className="flex items-center gap-3 mt-1 text-xs text-zinc-500">
-            <span className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5 sm:gap-2 mt-2 text-xs text-zinc-500 flex-wrap">
+            <span className="flex items-center gap-1 shrink-0">
               <Calendar className="h-3 w-3" />
               {formattedDate}
             </span>
             {script.platform && (
-              <span className="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">
+              <span className="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 shrink-0">
                 {script.platform}
               </span>
             )}
             {script.vibe && (
-              <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400">
+              <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 shrink-0">
                 {script.vibe}
               </span>
             )}
             {script.viralScore && (
-              <span className="flex items-center gap-1 text-yellow-400">
+              <span className="flex items-center gap-1 text-yellow-400 shrink-0">
                 <Zap className="h-3 w-3" />
                 {script.viralScore}/10
               </span>
@@ -79,7 +79,7 @@ function ScriptCard({ script, onDelete }: { script: Script; onDelete?: (id: numb
           <button
             onClick={handleDelete}
             disabled={isDeleting}
-            className="p-2 rounded-lg bg-zinc-800 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
+            className="p-2 rounded-lg bg-zinc-800 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors sm:opacity-0 sm:group-hover:opacity-100"
           >
             {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
           </button>
@@ -88,13 +88,13 @@ function ScriptCard({ script, onDelete }: { script: Script; onDelete?: (id: numb
       
       {/* Hook Preview */}
       <div className="p-3 rounded-lg bg-linear-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20">
-        <p className="text-sm text-pink-400 font-medium line-clamp-2">
+        <p className="text-xs sm:text-sm text-pink-400 font-medium line-clamp-3 sm:line-clamp-2 break-words">
           &quot;{script.hook}&quot;
         </p>
       </div>
       
       {/* Script Preview */}
-      <p className="mt-3 text-sm text-zinc-400 line-clamp-3">
+      <p className="mt-3 text-xs sm:text-sm text-zinc-400 line-clamp-3 break-words">
         {script.script}
       </p>
       
@@ -160,13 +160,7 @@ export default function LibraryPage() {
 
   return (
     <MainLayout>
-      {/* Sidebar - hidden on mobile */}
-      <div className="hidden lg:block">
-        <Sidebar />
-      </div>
-      
-      {/* Main content area */}
-      <main className="lg:ml-64 min-h-screen transition-all duration-300 ease-in-out">
+      <div className="min-h-screen">
         <div className="p-4 lg:p-6 xl:p-8">
           <div className="max-w-4xl mx-auto">
             {/* Header */}
@@ -182,7 +176,7 @@ export default function LibraryPage() {
 
             {/* Loading State */}
             {isLoading && (
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4">
                 <ScriptCardSkeleton />
                 <ScriptCardSkeleton />
                 <ScriptCardSkeleton />
@@ -214,7 +208,7 @@ export default function LibraryPage() {
 
             {/* Scripts Grid */}
             {!isLoading && !error && scripts.length > 0 && (
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4">
                 {scripts.map((script) => (
                   <ScriptCard 
                     key={script.id} 
@@ -226,7 +220,7 @@ export default function LibraryPage() {
             )}
           </div>
         </div>
-      </main>
+      </div>
     </MainLayout>
   );
 }

@@ -39,14 +39,14 @@ export function ScriptTimeline({ data, isLoading = false, className }: ScriptTim
         {/* Shimmer Skeleton Loading State */}
         <div className="space-y-4">
           {/* Hook Skeleton */}
-          <div className="relative flex gap-4">
-            <div className="flex flex-col items-center">
-              <div className="w-10 h-10 rounded-full bg-linear-to-br from-pink-500/30 to-purple-500/30 animate-pulse" />
+          <div className="relative flex gap-2 sm:gap-4">
+            <div className="flex flex-col items-center shrink-0">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-linear-to-br from-pink-500/30 to-purple-500/30 animate-pulse" />
               <div className="w-0.5 flex-1 min-h-8 bg-zinc-700/50" />
             </div>
-            <div className="flex-1 pb-6">
+            <div className="flex-1 pb-6 min-w-0">
               <div className="h-6 w-20 bg-zinc-800 rounded-full mb-3 animate-pulse" />
-              <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 overflow-hidden relative">
+              <div className="p-3 sm:p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 overflow-hidden relative">
                 <div className="h-5 w-3/4 bg-zinc-800 rounded mb-2 animate-pulse" />
                 <div className="h-4 w-1/2 bg-zinc-800/50 rounded animate-pulse" />
                 {/* Shimmer overlay */}
@@ -56,15 +56,15 @@ export function ScriptTimeline({ data, isLoading = false, className }: ScriptTim
           </div>
           
           {/* Body Skeleton */}
-          <div className="relative flex gap-4">
-            <div className="flex flex-col items-center">
+          <div className="relative flex gap-2 sm:gap-4">
+            <div className="flex flex-col items-center shrink-0">
               <div className="w-0.5 h-4 bg-zinc-700/50" />
-              <div className="w-10 h-10 rounded-full bg-zinc-800 animate-pulse" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-zinc-800 animate-pulse" />
               <div className="w-0.5 flex-1 min-h-8 bg-zinc-700/50" />
             </div>
-            <div className="flex-1 pb-6">
+            <div className="flex-1 pb-6 min-w-0">
               <div className="h-6 w-24 bg-zinc-800 rounded-full mb-3 animate-pulse" />
-              <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 overflow-hidden relative">
+              <div className="p-3 sm:p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 overflow-hidden relative">
                 <div className="space-y-3">
                   <div className="h-4 w-full bg-zinc-800 rounded animate-pulse" />
                   <div className="h-4 w-5/6 bg-zinc-800 rounded animate-pulse" />
@@ -77,14 +77,14 @@ export function ScriptTimeline({ data, isLoading = false, className }: ScriptTim
           </div>
           
           {/* CTA Skeleton */}
-          <div className="relative flex gap-4">
-            <div className="flex flex-col items-center">
+          <div className="relative flex gap-2 sm:gap-4">
+            <div className="flex flex-col items-center shrink-0">
               <div className="w-0.5 h-4 bg-zinc-700/50" />
-              <div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-500/30 to-blue-500/30 animate-pulse" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-linear-to-br from-purple-500/30 to-blue-500/30 animate-pulse" />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="h-6 w-32 bg-zinc-800 rounded-full mb-3 animate-pulse" />
-              <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 overflow-hidden relative">
+              <div className="p-3 sm:p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 overflow-hidden relative">
                 <div className="h-5 w-2/3 bg-zinc-800 rounded animate-pulse" />
                 <div className="absolute inset-0 bg-linear-to-r from-transparent via-zinc-700/20 to-transparent animate-shimmer" />
               </div>

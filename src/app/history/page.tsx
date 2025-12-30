@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Sidebar, MainLayout } from '@/components/layout';
+import { MainLayout } from '@/components/layout';
 import { History, Clock, Calendar, Zap, Copy, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Script } from '@/lib/db/schema';
@@ -142,13 +142,7 @@ export default function HistoryPage() {
 
   return (
     <MainLayout>
-      {/* Sidebar - hidden on mobile */}
-      <div className="hidden lg:block">
-        <Sidebar />
-      </div>
-      
-      {/* Main content area */}
-      <main className="lg:ml-64 min-h-screen transition-all duration-300 ease-in-out">
+      <div className="min-h-screen">
         <div className="p-4 lg:p-6 xl:p-8">
           <div className="max-w-4xl mx-auto">
             {/* Header */}
@@ -227,7 +221,7 @@ export default function HistoryPage() {
             )}
           </div>
         </div>
-      </main>
+      </div>
     </MainLayout>
   );
 }

@@ -57,9 +57,9 @@ export function TimelineCard({
   };
 
   return (
-    <div className={cn('relative flex gap-4', className)}>
+    <div className={cn('relative flex gap-2 sm:gap-4', className)}>
       {/* Timeline line */}
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center shrink-0">
         {/* Top line */}
         {!isFirst && (
           <div className="w-0.5 h-4 bg-linear-to-b from-zinc-700 to-zinc-600" />
@@ -68,7 +68,7 @@ export function TimelineCard({
         {/* Node */}
         <div
           className={cn(
-            'relative z-10 flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300',
+            'relative z-10 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all duration-300',
             variant === 'hook'
               ? 'bg-linear-to-br from-pink-500 to-purple-600 border-pink-500/50 shadow-lg shadow-pink-500/20'
               : variant === 'cta'
@@ -76,7 +76,7 @@ export function TimelineCard({
               : 'bg-zinc-800 border-zinc-600'
           )}
         >
-          <span className="text-white">{getIcon()}</span>
+          <span className="text-white text-sm sm:text-base">{getIcon()}</span>
         </div>
         
         {/* Bottom line */}
@@ -117,8 +117,8 @@ export function TimelineCard({
         >
           {/* Content */}
           <div className={cn(
-            'text-zinc-200 leading-relaxed',
-            variant === 'hook' ? 'text-xl font-semibold' : 'text-base'
+            'text-zinc-200 leading-relaxed pr-8',
+            variant === 'hook' ? 'text-base sm:text-xl font-semibold' : 'text-sm sm:text-base'
           )}>
             {children}
           </div>
@@ -151,11 +151,11 @@ export function TimelineCardSkeleton({
   isLast?: boolean;
 }) {
   return (
-    <div className="relative flex gap-4 animate-pulse">
+    <div className="relative flex gap-2 sm:gap-4 animate-pulse">
       {/* Timeline line */}
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center shrink-0">
         {!isFirst && <div className="w-0.5 h-4 bg-zinc-800" />}
-        <div className="w-10 h-10 rounded-full bg-zinc-800" />
+        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-zinc-800" />
         {!isLast && <div className="w-0.5 flex-1 min-h-8 bg-zinc-800" />}
       </div>
 

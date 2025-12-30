@@ -17,11 +17,11 @@ export interface ViralHook {
 }
 
 export const categoryLabels: Record<HookCategory, { label: string; emoji: string; color: string }> = {
-  education: { label: 'Giáo dục', emoji: '📚', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
-  sales: { label: 'Bán hàng', emoji: '💰', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
-  funny: { label: 'Hài hước', emoji: '😂', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
-  storytelling: { label: 'Kể chuyện', emoji: '📖', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
-  motivation: { label: 'Động lực', emoji: '🔥', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
+  education: { label: 'Giáo dục', emoji: '', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
+  sales: { label: 'Bán hàng', emoji: '', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
+  funny: { label: 'Hài hước', emoji: '', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
+  storytelling: { label: 'Kể chuyện', emoji: '', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
+  motivation: { label: 'Động lực', emoji: '', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
 };
 
 export const viralHooks: ViralHook[] = [

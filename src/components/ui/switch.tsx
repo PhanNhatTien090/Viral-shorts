@@ -9,6 +9,7 @@ interface SwitchProps {
   disabled?: boolean;
   className?: string;
   id?: string;
+  style?: React.CSSProperties;
 }
 
 export function Switch({ 
@@ -27,7 +28,7 @@ export function Switch({
       disabled={disabled}
       onClick={() => onCheckedChange(!checked)}
       className={cn(
-        'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent',
+        'relative inline-flex cursor-pointer rounded-full border-2 border-transparent',
         'transition-colors duration-200 ease-in-out',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900',
         'disabled:cursor-not-allowed disabled:opacity-50',
@@ -36,13 +37,29 @@ export function Switch({
           : 'bg-zinc-700',
         className
       )}
+      style={{ 
+        width: '44px', 
+        height: '24px', 
+        minWidth: '44px',
+        maxWidth: '44px',
+        minHeight: '24px',
+        maxHeight: '24px',
+        flexShrink: 0,
+        aspectRatio: '44/24'
+      }}
     >
       <span
         className={cn(
-          'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0',
-          'transition duration-200 ease-in-out',
-          checked ? 'translate-x-5' : 'translate-x-0'
+          'pointer-events-none inline-block rounded-full bg-white shadow-lg ring-0',
+          'transition duration-200 ease-in-out'
         )}
+        style={{ 
+          width: '20px', 
+          height: '20px',
+          minWidth: '20px',
+          minHeight: '20px',
+          transform: checked ? 'translateX(20px)' : 'translateX(0)'
+        }}
       />
     </button>
   );
