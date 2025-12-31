@@ -1,3 +1,5 @@
+// Script Archetype Types
+export type Archetype = 'Storytime' | 'Expert' | 'Savage' | 'Drama';
 // Global type definitions
 
 export type Json =

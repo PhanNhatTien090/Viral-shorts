@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Sparkles, Loader2, Zap, Settings2, LayoutTemplate, X, Lock, 
-  ChevronDown, ChevronUp, Copy, Check, Video, Smile, Theater, 
+  ChevronDown, ChevronUp, Copy, Check, Video, Theater, 
   Briefcase, BookOpen, Play, Users, Wand2, Clock
 } from 'lucide-react';
 import { experimental_useObject as useObject } from '@ai-sdk/react';
@@ -57,7 +57,7 @@ function VisualPromptCard({ visualPrompt }: { visualPrompt: string }) {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-pink-500/10 border border-purple-500/20 backdrop-blur-xl overflow-hidden"
+      className="rounded-2xl bg-linear-to-br from-purple-500/10 via-blue-500/10 to-pink-500/10 border border-purple-500/20 backdrop-blur-xl overflow-hidden"
     >
       {/* Header - Clickable to toggle */}
       <button
@@ -169,7 +169,7 @@ function PillOption({
         'border focus:outline-none focus:ring-2 focus:ring-pink-500/50',
         'shrink-0 whitespace-nowrap',
         selected
-          ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white border-transparent shadow-lg shadow-pink-500/20'
+          ? 'bg-linear-to-r from-pink-500 to-purple-500 text-white border-transparent shadow-lg shadow-pink-500/20'
           : 'bg-white/5 text-zinc-400 border-white/10 hover:bg-white/10 hover:text-zinc-200 hover:border-white/20',
         disabled && 'opacity-50 cursor-not-allowed'
       )}
@@ -195,7 +195,7 @@ function DashboardLoadingSkeleton() {
           </div>
           <div className="flex-1 space-y-4">
             <div className="h-12 w-full bg-white/5 rounded-xl animate-pulse" />
-            <div className="p-6 rounded-2xl bg-zinc-900/40 border border-white/5 min-h-[400px]">
+            <div className="p-6 rounded-2xl bg-zinc-900/40 border border-white/5 min-h-100">
               <div className="space-y-4">
                 <div className="h-6 w-32 bg-white/5 rounded animate-pulse" />
                 <div className="h-24 bg-white/5 rounded-xl animate-pulse" />
@@ -425,11 +425,31 @@ function DashboardContent() {
       }
     : undefined;
 
-  const vibeOptions = [
-    { value: 'humorous', label: 'Funny', icon: Smile },
-    { value: 'drama', label: 'Drama', icon: Theater },
-    { value: 'expert', label: 'Expert', icon: Briefcase },
-    { value: 'storytelling', label: 'Story', icon: BookOpen },
+  const archetypeOptions = [
+    {
+      value: 'Storytime',
+      label: 'Story Time',
+      desc: 'Kể chuyện, Tâm sự, Vlog',
+      icon: BookOpen, // Book/Coffee
+    },
+    {
+      value: 'Expert',
+      label: 'Chuyên Gia',
+      desc: 'Chia sẻ kiến thức, Tips, Giáo dục',
+      icon: Briefcase, // Glasses/Brain
+    },
+    {
+      value: 'Savage',
+      label: 'Xéo Xắt',
+      desc: 'Tranh luận, Quan điểm, Review gắt',
+      icon: Zap, // Fire/Lightning
+    },
+    {
+      value: 'Drama',
+      label: 'Hóng Biến',
+      desc: 'Tin tức, Bóc phốt, Sự kiện hot',
+      icon: Theater, // Eye/Mask
+    },
   ];
 
   const platformOptions = [
@@ -547,9 +567,9 @@ function DashboardContent() {
 
                 {/* Vibe Pills */}
                 <div className="space-y-3">
-                  <Label className="text-zinc-200 text-sm font-medium">Tone & Style</Label>
+                  <Label className="text-zinc-200 text-sm font-medium">Script Archetype</Label>
                   <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide md:flex-wrap md:overflow-visible md:pb-0">
-                    {vibeOptions.map((option) => {
+                    {archetypeOptions.map((option) => {
                       const Icon = option.icon;
                       return (
                         <PillOption
@@ -560,7 +580,8 @@ function DashboardContent() {
                           disabled={isLoading}
                         >
                           <Icon className="h-4 w-4" />
-                          {option.label}
+                          <span className="font-semibold">{option.label}</span>
+                          <span className="text-xs text-zinc-400 ml-1">{option.desc}</span>
                         </PillOption>
                       );
                     })}
@@ -592,7 +613,7 @@ function DashboardContent() {
                 {/* 🎬 Visual Prompt Toggle */}
                 <div className="flex items-center justify-between p-4 rounded-xl bg-black/20 border border-white/5 gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center shrink-0 border border-purple-500/20">
+                    <div className="w-9 h-9 rounded-lg bg-linear-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center shrink-0 border border-purple-500/20">
                       <Video className="h-4 w-4 text-purple-400" />
                     </div>
                     <div className="min-w-0">
@@ -677,7 +698,7 @@ function DashboardContent() {
                       type="button"
                       className={cn(
                         'w-full h-12 text-base font-semibold transition-all duration-300 rounded-xl',
-                        'bg-gradient-to-r from-pink-500 to-purple-500',
+                        'bg-linear-to-r from-pink-500 to-purple-500',
                         'hover:from-pink-600 hover:to-purple-600',
                         'shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30'
                       )}
@@ -693,7 +714,7 @@ function DashboardContent() {
                     disabled={isLoading || !topic || !vibe || !platform || !canGenerate}
                     className={cn(
                       'w-full h-12 text-base font-semibold transition-all duration-300 rounded-xl',
-                      'bg-gradient-to-r from-pink-500 to-purple-500',
+                      'bg-linear-to-r from-pink-500 to-purple-500',
                       'hover:from-pink-600 hover:to-purple-600',
                       'shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30',
                       'disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none'
