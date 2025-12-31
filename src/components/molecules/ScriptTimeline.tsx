@@ -15,7 +15,7 @@ interface AnalysisData {
 
 interface ScriptData {
   hook: string;
-  body: string[];
+  body: string | string[];
   cta: string;
   analysis?: AnalysisData;
 }
@@ -151,7 +151,10 @@ export function ScriptTimeline({ data, isLoading = false, className }: ScriptTim
     );
   }
 
-  const bodyText = Array.isArray(data.body) ? data.body.join('\n\n') : data.body;
+  // For clipboard copy, convert <br> to newlines
+  const bodyText = Array.isArray(data.body) 
+    ? data.body.join('\n\n') 
+    : data.body.replace(/<br\s*\/?>/gi, '\n');
 
   return (
     <div className={cn('relative', className)}>
@@ -221,7 +224,7 @@ export function ScriptTimeline({ data, isLoading = false, className }: ScriptTim
             ))}
           </ul>
         ) : (
-          <p>{data.body}</p>
+          <p dangerouslySetInnerHTML={{ __html: data.body.replace(/<br\s*\/?>/gi, '<br />') }} />
         )}
       </TimelineCard>
 

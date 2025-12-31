@@ -14,8 +14,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Viral Short Architect",
-  description: "A scalable SaaS application for creating viral short videos",
+  title: "ViralScript - AI Script Generator",
+  description: "AI-powered viral script generator for TikTok, YouTube Shorts, and Instagram Reels",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

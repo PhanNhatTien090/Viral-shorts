@@ -77,17 +77,17 @@ function TemplateCard({ hook, onUse }: { hook: ViralHook; onUse: (hook: ViralHoo
 
       {/* Title */}
       <h3 className="text-lg font-bold text-white mb-1">
-        {hook.titleVi}
+        {hook.title}
       </h3>
       <p className="text-xs text-zinc-500 mb-4">
-        {hook.title}
+        {hook.titleVi}
       </p>
 
       {/* Pattern - The Template */}
       <div className="flex-1 mb-4">
         <div className="p-3 rounded-xl bg-zinc-950/50 border border-zinc-800">
           <p className="text-sm text-zinc-200 leading-relaxed">
-            {hook.patternVi.split(/(\[.*?\])/).map((part, i) => {
+            {hook.pattern.split(/(\[.*?\])/).map((part, i) => {
               if (part.startsWith('[') && part.endsWith(']')) {
                 return (
                   <span key={i} className="text-pink-400 font-semibold bg-pink-500/10 px-1 rounded">
@@ -105,10 +105,10 @@ function TemplateCard({ hook, onUse }: { hook: ViralHook; onUse: (hook: ViralHoo
       <div className="mb-4">
         <p className="text-xs text-zinc-500 mb-1 flex items-center gap-1">
           <Brain className="h-3 w-3" />
-          Ví dụ thực tế:
+          Real example:
         </p>
         <p className="text-sm text-zinc-400 italic leading-relaxed">
-          &ldquo;{hook.exampleVi}&rdquo;
+          &ldquo;{hook.example}&rdquo;
         </p>
       </div>
 
@@ -130,7 +130,7 @@ function TemplateCard({ hook, onUse }: { hook: ViralHook; onUse: (hook: ViralHoo
           'transition-all duration-300'
         )}
       >
-        Sử dụng mẫu này
+        Use this template
         <ArrowRight className="h-4 w-4 ml-2" />
       </Button>
     </div>
@@ -176,7 +176,7 @@ export default function TemplatesPage() {
   // Handle using a template
   const handleUseTemplate = (hook: ViralHook) => {
     // Redirect to dashboard page with template query param
-    const encodedPattern = encodeURIComponent(hook.patternVi);
+    const encodedPattern = encodeURIComponent(hook.pattern);
     router.push(`/dashboard?template=${hook.id}&pattern=${encodedPattern}`);
   };
 
@@ -192,12 +192,12 @@ export default function TemplatesPage() {
                 <LayoutTemplate className="h-6 w-6 text-pink-400" />
               </div>
               <h1 className="text-2xl md:text-3xl font-bold text-white">
-                Kho Mẫu Viral Hooks
+                Viral Hook Templates
               </h1>
             </div>
             <p className="text-zinc-400 leading-relaxed max-w-2xl">
-              Bộ sưu tập các công thức hook đã được chứng minh hiệu quả. 
-              Chọn một mẫu và bắt đầu tạo nội dung viral ngay lập tức! 🚀
+              A collection of proven hook formulas that drive engagement. 
+              Pick a template and start creating viral content instantly! 🚀
             </p>
           </div>
 
@@ -206,13 +206,13 @@ export default function TemplatesPage() {
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-pink-400" />
               <span className="text-sm text-zinc-300">
-                <strong className="text-white">{viralHooks.length}</strong> mẫu hook
+                <strong className="text-white">{viralHooks.length}</strong> hook templates
               </span>
             </div>
             <div className="flex items-center gap-2">
               <Flame className="h-5 w-5 text-orange-400" />
               <span className="text-sm text-zinc-300">
-                <strong className="text-white">{viralHooks.filter(h => h.viralPotential >= 9).length}</strong> mẫu viral cao
+                <strong className="text-white">{viralHooks.filter(h => h.viralPotential >= 9).length}</strong> high viral potential
               </span>
             </div>
           </div>
@@ -224,7 +224,7 @@ export default function TemplatesPage() {
               active={activeCategory === 'all'} 
               onClick={() => setActiveCategory('all')}
             >
-              Tất cả
+              All
             </FilterTab>
             {hookCategories.map(cat => {
               const info = categoryLabels[cat];
@@ -260,10 +260,10 @@ export default function TemplatesPage() {
                 <LayoutTemplate className="h-8 w-8 text-zinc-600" />
               </div>
               <h3 className="text-lg font-medium text-zinc-400 mb-2">
-                Không tìm thấy mẫu nào
+                No templates found
               </h3>
               <p className="text-sm text-zinc-500">
-                Thử chọn danh mục khác
+                Try selecting a different category
               </p>
             </div>
           )}
@@ -271,8 +271,8 @@ export default function TemplatesPage() {
           {/* Pro Tip */}
           <div className="mt-8 p-4 rounded-xl bg-linear-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20">
             <p className="text-sm text-zinc-300 leading-relaxed">
-              💡 <strong className="text-purple-300">Pro tip:</strong> Các mẫu với điểm viral 9/10 
-              thường tạo ra nhiều comment tranh cãi - đây là yếu tố giúp thuật toán đẩy video của bạn!
+              💡 <strong className="text-purple-300">Pro tip:</strong> Templates with a 9/10 viral score 
+              often generate controversial comments - this is what helps the algorithm push your video!
             </p>
           </div>
         </div>

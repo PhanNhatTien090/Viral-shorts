@@ -11,19 +11,20 @@ import { z } from 'zod';
 // Viral Analysis Schema (shared)
 // ═══════════════════════════════════════════════════════════════
 export const viralAnalysisSchema = z.object({
-  hookPsychology: z.string().describe('Tại sao hook này work - max 15 từ'),
-  viralScore: z.number().min(1).max(10).describe('Điểm viral 1-10'),
-  audienceInsight: z.string().describe('Đối tượng cụ thể'),
-  viralFramework: z.string().describe('Framework đã dùng'),
+  hookPsychology: z.string().describe('Why this hook works - max 15 words'),
+  viralScore: z.number().min(1).max(10).describe('Viral score 1-10'),
+  audienceInsight: z.string().describe('Specific target audience'),
+  viralFramework: z.string().describe('Framework used: Pattern Break / Harsh Truth / Counter-Intuitive / etc'),
 });
 
 // ═══════════════════════════════════════════════════════════════
 // Base Script Schema (without visuals)
 // ═══════════════════════════════════════════════════════════════
 export const baseScriptSchema = z.object({
-  hook: z.string().describe('Câu mở đầu shocking dưới 5 giây, trigger cảm xúc mạnh'),
-  script: z.string().describe('Nội dung chính viết thành câu hoàn chỉnh. Dùng \\n để xuống dòng. KHÔNG dùng bullet points hay markdown. Phải đủ dài theo length constraint.'),
-  cta: z.string().describe('Kêu gọi hành động cuối video, tạo FOMO'),
+  scenario_detected: z.enum(['Narrative', 'Knowledge', 'Opinion']).describe('Detected scenario type based on topic analysis'),
+  hook: z.string().describe('Savage opening line under 5 seconds. Pattern Break, Harsh Truth, or Counter-Intuitive style.'),
+  script: z.string().describe('Main content following detected scenario structure. Use <br> for line breaks.'),
+  cta: z.string().describe('Short, engagement-driving call to action'),
   analysis: viralAnalysisSchema,
 });
 
@@ -31,7 +32,7 @@ export const baseScriptSchema = z.object({
 // Full Script Schema (with visuals)
 // ═══════════════════════════════════════════════════════════════
 export const fullScriptSchema = baseScriptSchema.extend({
-  visualPrompt: z.string().describe('English prompt for Kling/Runway/Luma AI video'),
+  visualPrompt: z.string().describe('English prompt for AI video generation (Kling/Runway). Describe: subject, scene, camera, lighting.'),
 });
 
 // ═══════════════════════════════════════════════════════════════

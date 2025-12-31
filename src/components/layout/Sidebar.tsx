@@ -12,7 +12,6 @@ import {
   useUser,
 } from '@clerk/nextjs';
 import {
-  Sparkles,
   FolderOpen,
   LayoutTemplate,
   Settings,
@@ -20,9 +19,9 @@ import {
   PlusCircle,
   ChevronLeft,
   ChevronRight,
-  Clapperboard,
   LogIn,
 } from 'lucide-react';
+import { Logo } from '@/components/Logo';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -97,20 +96,12 @@ export function Sidebar({ onNewScript, className }: SidebarProps) {
       <div className="flex flex-col h-full overflow-hidden">
         {/* Logo */}
         <div className="flex items-center justify-between p-4 border-b border-zinc-800/50">
-          <Link href="/" className="flex items-center gap-2 overflow-hidden">
-            <div className="relative shrink-0">
-              <Clapperboard className="h-8 w-8 text-pink-500" />
-              <Sparkles className="absolute -top-1 -right-1 h-3 w-3 text-purple-400" />
-            </div>
-            {!collapsed && (
-              <div className="flex flex-col whitespace-nowrap overflow-hidden">
-                <span className="font-bold text-sm bg-linear-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
-                  Viral Short
-                </span>
-                <span className="text-[10px] text-zinc-500 -mt-1">Architect</span>
-              </div>
-            )}
-          </Link>
+          <Logo 
+            size="sm" 
+            href="/" 
+            iconOnly={collapsed} 
+            showTagline={!collapsed}
+          />
           <Button
             variant="ghost"
             size="icon"

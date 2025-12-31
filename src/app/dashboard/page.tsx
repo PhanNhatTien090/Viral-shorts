@@ -2,7 +2,12 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Sparkles, Loader2, Zap, Settings2, LayoutTemplate, X, Lock, ChevronDown, ChevronUp, Copy, Check, Video, Smile, Theater, Briefcase, BookOpen, Play, Users } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Sparkles, Loader2, Zap, Settings2, LayoutTemplate, X, Lock, 
+  ChevronDown, ChevronUp, Copy, Check, Video, Smile, Theater, 
+  Briefcase, BookOpen, Play, Users, Wand2, Clock
+} from 'lucide-react';
 import { experimental_useObject as useObject } from '@ai-sdk/react';
 import { z } from 'zod';
 import { useUser, SignInButton } from '@clerk/nextjs';
@@ -24,7 +29,6 @@ import { viralHooks } from '@/data/viral-hooks';
 import { useGuestUsage } from '@/hooks/useGuestUsage';
 
 // CRITICAL: Must match backend schema EXACTLY
-// 🧠 Schema with optional visual prompt (only when includeVisuals = true)
 const schema = z.object({
   hook: z.string(),
   script: z.string(),
@@ -50,22 +54,26 @@ function VisualPromptCard({ visualPrompt }: { visualPrompt: string }) {
   };
 
   return (
-    <div className="rounded-2xl bg-linear-to-br from-purple-500/10 via-blue-500/10 to-pink-500/10 border border-purple-500/20 backdrop-blur-sm overflow-hidden">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-2xl bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-pink-500/10 border border-purple-500/20 backdrop-blur-xl overflow-hidden"
+    >
       {/* Header - Clickable to toggle */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-between p-4 md:p-5 hover:bg-white/5 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-purple-500/20">
-            <span className="text-lg">🎬</span>
+          <div className="p-2 rounded-xl bg-purple-500/20 border border-purple-500/30">
+            <Video className="h-5 w-5 text-purple-400" />
           </div>
           <div className="text-left">
             <h3 className="text-sm md:text-base font-semibold text-white">
               Visual Prompt (AI Video)
             </h3>
             <p className="text-xs text-zinc-400">
-              Tối ưu cho Kling AI, Runway, Luma
+              Optimized for Kling AI, Runway, Luma
             </p>
           </div>
         </div>
@@ -82,46 +90,56 @@ function VisualPromptCard({ visualPrompt }: { visualPrompt: string }) {
       </button>
 
       {/* Collapsible Content */}
-      {isExpanded && (
-        <div className="px-4 md:px-5 pb-4 md:pb-5 space-y-3">
-          {/* Copy Button */}
-          <div className="flex justify-end">
-            <button
-              onClick={handleCopy}
-              className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
-                copied
-                  ? 'bg-green-500/20 text-green-400'
-                  : 'bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700'
-              )}
-            >
-              {copied ? (
-                <>
-                  <Check className="h-3.5 w-3.5" /> Đã copy
-                </>
-              ) : (
-                <>
-                  <Copy className="h-3.5 w-3.5" /> Copy Prompt
-                </>
-              )}
-            </button>
-          </div>
-          
-          {/* Prompt Content */}
-          <div className="p-3 md:p-4 rounded-xl bg-zinc-950/80 border border-zinc-800 font-mono text-xs md:text-sm text-zinc-300 leading-relaxed">
-            {visualPrompt}
-          </div>
-          
-          {/* Tip */}
-          <div className="flex items-start gap-2 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
-            <span className="text-sm">💡</span>
-            <p className="text-xs text-yellow-200/80 leading-relaxed">
-              Copy đoạn tiếng Anh và dán trực tiếp vào Kling AI, Runway, hoặc Luma để tạo video.
-            </p>
-          </div>
-        </div>
-      )}
-    </div>
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 md:px-5 pb-4 md:pb-5 space-y-3">
+              {/* Copy Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={handleCopy}
+                  className={cn(
+                    'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
+                    copied
+                      ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                      : 'bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10 border border-white/10'
+                  )}
+                >
+                  {copied ? (
+                    <>
+                      <Check className="h-3.5 w-3.5" /> Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3.5 w-3.5" /> Copy Prompt
+                    </>
+                  )}
+                </button>
+              </div>
+              
+              {/* Prompt Content */}
+              <div className="p-4 rounded-xl bg-black/40 border border-white/5 font-mono text-xs md:text-sm text-zinc-300 leading-relaxed">
+                {visualPrompt}
+              </div>
+              
+              {/* Tip */}
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                <span className="text-sm">💡</span>
+                <p className="text-xs text-amber-200/80 leading-relaxed">
+                  Copy the English prompt and paste directly into Kling AI, Runway, or Luma to generate video.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
 
@@ -140,22 +158,24 @@ function PillOption({
   disabled?: boolean;
 }) {
   return (
-    <button
+    <motion.button
       type="button"
       onClick={() => onClick(value)}
       disabled={disabled}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
       className={cn(
         'inline-flex items-center gap-2 px-4 py-2.5 h-10 rounded-full text-sm font-medium transition-all duration-200',
         'border focus:outline-none focus:ring-2 focus:ring-pink-500/50',
         'shrink-0 whitespace-nowrap',
         selected
-          ? 'bg-linear-to-r from-pink-500 to-purple-500 text-white border-transparent shadow-lg shadow-pink-500/20'
-          : 'bg-zinc-900/50 text-zinc-400 border-zinc-700 hover:bg-zinc-800 hover:text-zinc-200',
+          ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white border-transparent shadow-lg shadow-pink-500/20'
+          : 'bg-white/5 text-zinc-400 border-white/10 hover:bg-white/10 hover:text-zinc-200 hover:border-white/20',
         disabled && 'opacity-50 cursor-not-allowed'
       )}
     >
       {children}
-    </button>
+    </motion.button>
   );
 }
 
@@ -166,21 +186,21 @@ function DashboardLoadingSkeleton() {
       <div className="min-h-screen">
         <div className="flex flex-col lg:flex-row gap-6 p-4 lg:p-6 xl:p-8">
           <div className="w-full lg:w-96 lg:shrink-0 space-y-6">
-            <div className="h-8 w-48 bg-zinc-800 rounded animate-pulse" />
-            <div className="p-6 rounded-2xl bg-zinc-900/60 border border-zinc-800 space-y-4">
-              <div className="h-12 bg-zinc-800 rounded animate-pulse" />
-              <div className="h-12 bg-zinc-800 rounded animate-pulse" />
-              <div className="h-12 bg-zinc-800 rounded animate-pulse" />
+            <div className="h-8 w-48 bg-white/5 rounded animate-pulse" />
+            <div className="p-6 rounded-2xl bg-zinc-900/40 border border-white/5 space-y-4">
+              <div className="h-12 bg-white/5 rounded-xl animate-pulse" />
+              <div className="h-12 bg-white/5 rounded-xl animate-pulse" />
+              <div className="h-12 bg-white/5 rounded-xl animate-pulse" />
             </div>
           </div>
           <div className="flex-1 space-y-4">
-            <div className="h-12 w-full bg-zinc-800 rounded animate-pulse" />
-            <div className="p-6 rounded-2xl bg-zinc-900/40 border border-zinc-800/50 min-h-100">
+            <div className="h-12 w-full bg-white/5 rounded-xl animate-pulse" />
+            <div className="p-6 rounded-2xl bg-zinc-900/40 border border-white/5 min-h-[400px]">
               <div className="space-y-4">
-                <div className="h-6 w-32 bg-zinc-800 rounded animate-pulse" />
-                <div className="h-24 bg-zinc-800 rounded animate-pulse" />
-                <div className="h-6 w-48 bg-zinc-800 rounded animate-pulse" />
-                <div className="h-32 bg-zinc-800 rounded animate-pulse" />
+                <div className="h-6 w-32 bg-white/5 rounded animate-pulse" />
+                <div className="h-24 bg-white/5 rounded-xl animate-pulse" />
+                <div className="h-6 w-48 bg-white/5 rounded animate-pulse" />
+                <div className="h-32 bg-white/5 rounded-xl animate-pulse" />
               </div>
             </div>
           </div>
@@ -290,7 +310,7 @@ function DashboardContent() {
     e.preventDefault();
 
     if (!topic?.trim() || !vibe || !platform) {
-      alert('Vui lòng điền đầy đủ thông tin!');
+      alert('Please fill in all required fields!');
       return;
     }
 
@@ -313,7 +333,7 @@ function DashboardContent() {
       const visualText = object.visualPrompt 
         ? `\n\n🎬 VISUAL PROMPT:\n\n🎥 Video Generation (Runway/Kling/Sora):\n${object.visualPrompt}`
         : '';
-      const fullText = `HOOK:\n${object.hook}\n\nNỘI DUNG:\n${object.script}\n\nKÊU GỌI HÀNH ĐỘNG:\n${object.cta}${visualText}`;
+      const fullText = `HOOK:\n${object.hook}\n\nSCRIPT:\n${object.script}\n\nCALL TO ACTION:\n${object.cta}${visualText}`;
       navigator.clipboard.writeText(fullText);
     }
   };
@@ -332,7 +352,7 @@ function DashboardContent() {
     }
 
     setSaveStatus('saving');
-    setSaveMessage('Đang lưu kịch bản...');
+    setSaveMessage('Saving script...');
 
     try {
       const response = await fetch('/api/scripts/save', {
@@ -356,7 +376,7 @@ function DashboardContent() {
 
       if (response.ok) {
         setSaveStatus('success');
-        setSaveMessage('✅ Đã lưu vào thư viện!');
+        setSaveMessage('✅ Saved to library!');
         console.log('✅ Script saved:', data);
         
         // Refresh router to update history sidebar
@@ -373,7 +393,7 @@ function DashboardContent() {
     } catch (error) {
       console.error('❌ Save error:', error);
       setSaveStatus('error');
-      setSaveMessage('❌ Lỗi khi lưu. Vui lòng thử lại.');
+      setSaveMessage('❌ Error saving. Please try again.');
       
       // Reset status after 3 seconds
       setTimeout(() => {
@@ -383,11 +403,12 @@ function DashboardContent() {
     }
   };
 
-  // Convert script to body array for timeline + include analysis
+  // Convert script to body for timeline + include analysis
+  // Pass raw script string - the timeline component will render <br> as HTML
   const scriptData = object?.hook && object?.script && object?.cta
     ? {
         hook: object.hook,
-        body: object.script.split('\n').filter((line: string) => line.trim()),
+        body: object.script, // Pass as string, not array - timeline will render <br> tags
         cta: object.cta,
         // Only include analysis if all fields are present
         analysis: object.analysis?.hookPsychology && 
@@ -405,10 +426,10 @@ function DashboardContent() {
     : undefined;
 
   const vibeOptions = [
-    { value: 'humorous', label: 'Hài hước', icon: Smile },
+    { value: 'humorous', label: 'Funny', icon: Smile },
     { value: 'drama', label: 'Drama', icon: Theater },
-    { value: 'expert', label: 'Chuyên gia', icon: Briefcase },
-    { value: 'storytelling', label: 'Kể chuyện', icon: BookOpen },
+    { value: 'expert', label: 'Expert', icon: Briefcase },
+    { value: 'storytelling', label: 'Story', icon: BookOpen },
   ];
 
   const platformOptions = [
@@ -425,15 +446,20 @@ function DashboardContent() {
         <div className="flex flex-col lg:flex-row gap-6 p-4 lg:p-6 xl:p-8">
           
           {/* Left Column - Input Form (Fixed Width, Sticky) */}
-          <div className="w-full lg:w-96 lg:shrink-0 lg:sticky lg:top-6 lg:self-start space-y-6">
+          <div className="w-full lg:w-96 lg:shrink-0 lg:sticky lg:top-20 lg:self-start space-y-6">
             {/* Header */}
-            <div className="space-y-2">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-2"
+            >
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-white">
-                  Tạo Kịch Bản Mới
+                <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
+                  <Wand2 className="h-7 w-7 text-pink-400" />
+                  Create New Script
                 </h1>
                 <p className="text-sm text-zinc-400 mt-1 leading-relaxed">
-                  Nhập chủ đề và để AI tạo nội dung viral cho bạn ✨
+                  Enter your topic and let AI generate viral content for you ✨
                 </p>
               </div>
               
@@ -442,36 +468,41 @@ function DashboardContent() {
                 {healthStatus === 'checking' && (
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20">
                     <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
-                    <span className="text-xs text-blue-400">Đang kiểm tra...</span>
+                    <span className="text-xs text-blue-400">Checking...</span>
                   </div>
                 )}
                 {healthStatus === 'healthy' && (
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
                     <div className="w-2 h-2 bg-green-400 rounded-full" />
-                    <span className="text-xs text-green-400">AI sẵn sàng</span>
+                    <span className="text-xs text-green-400">AI Ready</span>
                   </div>
                 )}
                 {healthStatus === 'unhealthy' && (
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/20">
                     <div className="w-2 h-2 bg-red-400 rounded-full" />
-                    <span className="text-xs text-red-400">Lỗi hệ thống</span>
+                    <span className="text-xs text-red-400">System Error</span>
                   </div>
                 )}
               </div>
-            </div>
+            </motion.div>
 
-            {/* Input Form Card */}
-            <form onSubmit={handleSubmit}>
-              <div className="p-6 rounded-2xl bg-zinc-900/60 border border-zinc-800 backdrop-blur-sm space-y-6">
+            {/* Input Form Card - Glassmorphism */}
+            <motion.form 
+              onSubmit={handleSubmit}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <div className="p-6 rounded-2xl bg-zinc-900/40 border border-white/10 backdrop-blur-xl space-y-6">
                 {/* Topic Input */}
                 <div className="space-y-2">
                   <Label htmlFor="topic" className="text-zinc-200 flex items-center gap-2 text-sm font-medium">
                     <Zap className="h-4 w-4 text-pink-400" />
-                    Chủ đề Video
+                    Video Topic
                     {activeTemplate && (
                       <span className="inline-flex items-center gap-1 ml-2 px-2 py-0.5 rounded-full text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30">
                         <LayoutTemplate className="h-3 w-3" />
-                        Từ mẫu
+                        From template
                       </span>
                     )}
                   </Label>
@@ -479,7 +510,7 @@ function DashboardContent() {
                     <Input
                       id="topic"
                       name="topic"
-                      placeholder="VD: Bí quyết kiếm tiền online 2024, 5 tips học tiếng Anh hiệu quả..."
+                      placeholder="Ex: How to make money online 2024, 5 tips to learn English effectively..."
                       value={topic}
                       onChange={(e) => {
                         setTopic(e.target.value);
@@ -490,7 +521,9 @@ function DashboardContent() {
                       }}
                       disabled={isLoading}
                       className={cn(
-                        "h-12 bg-zinc-950 border-zinc-700 text-zinc-100 placeholder:text-zinc-600 focus:border-pink-500/50 focus:ring-pink-500/20 leading-relaxed",
+                        "h-12 bg-black/20 border-white/10 text-zinc-100 placeholder:text-zinc-600",
+                        "focus:border-pink-500/50 focus:ring-2 focus:ring-pink-500/20",
+                        "transition-all leading-relaxed rounded-xl",
                         activeTemplate && "border-purple-500/50 pr-10"
                       )}
                       required
@@ -507,169 +540,194 @@ function DashboardContent() {
                   </div>
                   {activeTemplate && (
                     <p className="text-xs text-purple-300">
-                      💡 Thay thế các [placeholder] bằng nội dung của bạn
+                      💡 Replace [placeholders] with your content
                     </p>
                   )}
-              </div>
+                </div>
 
                 {/* Vibe Pills */}
                 <div className="space-y-3">
-                  <Label className="text-zinc-200 text-sm font-medium">Phong cách</Label>
-                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide md:flex-wrap md:overflow-visible md:pb-0">
-                  {vibeOptions.map((option) => {
-                    const Icon = option.icon;
-                    return (
-                    <PillOption
-                      key={option.value}
-                      value={option.value}
-                      selected={vibe === option.value}
-                      onClick={setVibe}
-                      disabled={isLoading}
-                    >
-                      <Icon className="h-4 w-4" />
-                      {option.label}
-                    </PillOption>
-                  );})}
+                  <Label className="text-zinc-200 text-sm font-medium">Tone & Style</Label>
+                  <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide md:flex-wrap md:overflow-visible md:pb-0">
+                    {vibeOptions.map((option) => {
+                      const Icon = option.icon;
+                      return (
+                        <PillOption
+                          key={option.value}
+                          value={option.value}
+                          selected={vibe === option.value}
+                          onClick={setVibe}
+                          disabled={isLoading}
+                        >
+                          <Icon className="h-4 w-4" />
+                          {option.label}
+                        </PillOption>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
 
                 {/* Platform Pills */}
                 <div className="space-y-3">
-                  <Label className="text-zinc-200 text-sm font-medium">Nền tảng</Label>
-                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide md:flex-wrap md:overflow-visible md:pb-0">
-                  {platformOptions.map((option) => {
-                    const Icon = option.icon;
-                    return (
-                    <PillOption
-                      key={option.value}
-                      value={option.value}
-                      selected={platform === option.value}
-                      onClick={setPlatform}
-                      disabled={isLoading}
+                  <Label className="text-zinc-200 text-sm font-medium">Platform</Label>
+                  <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide md:flex-wrap md:overflow-visible md:pb-0">
+                    {platformOptions.map((option) => {
+                      const Icon = option.icon;
+                      return (
+                        <PillOption
+                          key={option.value}
+                          value={option.value}
+                          selected={platform === option.value}
+                          onClick={setPlatform}
+                          disabled={isLoading}
+                        >
+                          <Icon className="h-4 w-4" />
+                          {option.label}
+                        </PillOption>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 🎬 Visual Prompt Toggle */}
+                <div className="flex items-center justify-between p-4 rounded-xl bg-black/20 border border-white/5 gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center shrink-0 border border-purple-500/20">
+                      <Video className="h-4 w-4 text-purple-400" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-zinc-200">Generate Video Prompt</p>
+                      <p className="text-xs text-zinc-500 truncate">For Runway/Kling/Sora</p>
+                    </div>
+                  </div>
+                  <Switch 
+                    checked={includeVisuals} 
+                    onCheckedChange={setIncludeVisuals}
+                    disabled={isLoading}
+                    className="shrink-0"
+                    style={{ width: '44px', minWidth: '44px', height: '24px' }}
+                  />
+                </div>
+
+                {/* Advanced Settings Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setShowAdvanced(!showAdvanced)}
+                  className="flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
+                >
+                  <Settings2 className="h-4 w-4" />
+                  {showAdvanced ? 'Hide advanced settings' : 'Advanced settings'}
+                </button>
+
+                <AnimatePresence>
+                  {showAdvanced && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
                     >
-                      <Icon className="h-4 w-4" />
-                      {option.label}
-                    </PillOption>
-                  );})}
-                </div>
-              </div>
+                      <div className="p-4 rounded-xl bg-black/20 border border-white/5 space-y-4">
+                        {/* Video Duration Selector */}
+                        <div className="space-y-2">
+                          <Label htmlFor="duration" className="text-zinc-400 text-sm flex items-center gap-2">
+                            <Clock className="h-4 w-4" />
+                            Video Duration
+                          </Label>
+                          <Select 
+                            value={duration} 
+                            onValueChange={(val) => setDuration(val as '15-30' | '30-60' | '60-90')}
+                          >
+                            <SelectTrigger className="w-full bg-black/20 border-white/10 text-white rounded-xl">
+                              <SelectValue placeholder="Select duration" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-zinc-900 border-white/10 rounded-xl">
+                              <SelectItem value="15-30">15-30 seconds</SelectItem>
+                              <SelectItem value="30-60">30-60 seconds</SelectItem>
+                              <SelectItem value="60-90">60-90 seconds</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-              {/* 🎬 Visual Prompt Toggle - Token Optimization */}
-              <div className="flex items-center justify-between p-3 sm:p-4 rounded-xl bg-zinc-950/50 border border-zinc-800 gap-3">
-                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-lg bg-linear-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center shrink-0">
-                    <Video className="h-4 w-4 text-purple-400" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-zinc-200 truncate">Tạo kèm Prompt Video</p>
-                    <p className="text-xs text-zinc-500 truncate">Prompt cho Runway/Kling/Sora</p>
-                  </div>
-                </div>
-                <Switch 
-                  checked={includeVisuals} 
-                  onCheckedChange={setIncludeVisuals}
-                  disabled={isLoading}
-                  className="shrink-0"
-                  style={{ width: '44px', minWidth: '44px', height: '24px' }}
-                />
-              </div>
-
-              {/* Advanced Settings Toggle */}
-              <button
-                type="button"
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                className="flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
-              >
-                <Settings2 className="h-4 w-4" />
-                {showAdvanced ? 'Ẩn cài đặt nâng cao' : 'Cài đặt nâng cao'}
-              </button>
-
-              {showAdvanced && (
-                <div className="p-4 rounded-xl bg-zinc-950/50 border border-zinc-800 space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="duration" className="text-zinc-400 text-sm">
-                      Độ dài video
-                    </Label>
-                    <Select 
-                      value={duration} 
-                      onValueChange={(val) => setDuration(val as '15-30' | '30-60' | '60-90')}
+                {/* Error Display */}
+                <AnimatePresence>
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="p-4 rounded-xl bg-red-500/10 border border-red-500/20"
                     >
-                      <SelectTrigger className="w-full bg-zinc-900 border-zinc-700 text-white">
-                        <SelectValue placeholder="Chọn độ dài" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-900 border-zinc-700">
-                        <SelectItem value="15-30">15-30 giây</SelectItem>
-                        <SelectItem value="30-60">30-60 giây</SelectItem>
-                        <SelectItem value="60-90">60-90 giây</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              )}
+                      <p className="text-red-400 text-sm">
+                        ⚠️ Error: {error?.message || 'Something went wrong. Please try again.'}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-              {/* Error Display */}
-              {error && (
-                <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20">
-                  <p className="text-red-400 text-sm">
-                    ⚠️ Lỗi: {error?.message || 'Có lỗi xảy ra. Vui lòng thử lại.'}
-                  </p>
-                </div>
-              )}
-
-              {/* Submit Button - with guest limit handling */}
-              {!isSignedIn && isLimitReached ? (
-                // 🔒 Guest limit reached - show sign-in CTA
-                <SignInButton mode="modal">
+                {/* Submit Button - with guest limit handling */}
+                {!isSignedIn && isLimitReached ? (
+                  // 🔒 Guest limit reached - show sign-in CTA
+                  <SignInButton mode="modal">
+                    <Button
+                      type="button"
+                      className={cn(
+                        'w-full h-12 text-base font-semibold transition-all duration-300 rounded-xl',
+                        'bg-gradient-to-r from-pink-500 to-purple-500',
+                        'hover:from-pink-600 hover:to-purple-600',
+                        'shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30'
+                      )}
+                    >
+                      <Lock className="mr-2 h-5 w-5" />
+                      Sign in to continue creating
+                    </Button>
+                  </SignInButton>
+                ) : (
+                  // ✅ Normal submit button
                   <Button
-                    type="button"
+                    type="submit"
+                    disabled={isLoading || !topic || !vibe || !platform || !canGenerate}
                     className={cn(
-                      'w-full h-12 text-base font-semibold transition-all duration-300',
-                      'bg-linear-to-r from-pink-500 to-purple-500',
+                      'w-full h-12 text-base font-semibold transition-all duration-300 rounded-xl',
+                      'bg-gradient-to-r from-pink-500 to-purple-500',
                       'hover:from-pink-600 hover:to-purple-600',
-                      'shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30'
+                      'shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30',
+                      'disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none'
                     )}
                   >
-                    <Lock className="mr-2 h-5 w-5" />
-                    Đăng nhập để tiếp tục tạo
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Generating script...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2 h-5 w-5" />
+                        Generate Script
+                      </>
+                    )}
                   </Button>
-                </SignInButton>
-              ) : (
-                // ✅ Normal submit button
-                <Button
-                  type="submit"
-                  disabled={isLoading || !topic || !vibe || !platform || !canGenerate}
-                  className={cn(
-                    'w-full h-12 text-base font-semibold transition-all duration-300',
-                    'bg-linear-to-r from-pink-500 to-purple-500',
-                    'hover:from-pink-600 hover:to-purple-600',
-                    'shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30',
-                    'disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none'
-                  )}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Đang tạo kịch bản...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="mr-2 h-5 w-5" />
-                      Tạo Kịch Bản
-                    </>
-                  )}
-                </Button>
-              )}
+                )}
               </div>
-            </form>
+            </motion.form>
 
             {/* Tips Section */}
-            <div className="p-4 rounded-xl bg-zinc-900/30 border border-zinc-800/50">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="p-4 rounded-xl bg-zinc-900/30 border border-white/5"
+            >
               <p className="text-xs text-zinc-400 leading-relaxed">
-                💡 <strong className="text-zinc-300">Pro tip:</strong> Chủ đề càng cụ thể, 
-                kịch bản càng chất lượng. Thử thêm góc nhìn độc đáo hoặc số liệu cụ thể để 
-                tăng tính thuyết phục!
+                💡 <strong className="text-zinc-300">Pro tip:</strong> The more specific your topic, 
+                the better the script. Try adding unique angles or specific data points 
+                to make your content more compelling!
               </p>
-            </div>
+            </motion.div>
             
             {/* 👻 Guest Usage Banner - only show for signed out users */}
             {isAuthLoaded && !isSignedIn && (
@@ -683,20 +741,27 @@ function DashboardContent() {
           {/* Right Column - Output Area (Fills remaining space) */}
           <div className="flex-1 min-w-0 space-y-4">
             {/* Toast Notification */}
-            {saveMessage && (
-              <div className={cn(
-                'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg transition-all duration-300',
-                'flex items-center gap-2',
-                saveStatus === 'success' && 'bg-green-500/20 border border-green-500/30 text-green-400',
-                saveStatus === 'error' && 'bg-red-500/20 border border-red-500/30 text-red-400',
-                saveStatus === 'saving' && 'bg-blue-500/20 border border-blue-500/30 text-blue-400'
-              )}>
-                {saveStatus === 'saving' && <Loader2 className="h-4 w-4 animate-spin" />}
-                {saveStatus === 'success' && <span>✅</span>}
-                {saveStatus === 'error' && <span>❌</span>}
-                <span className="text-sm font-medium">{saveMessage}</span>
-              </div>
-            )}
+            <AnimatePresence>
+              {saveMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20, x: 20 }}
+                  animate={{ opacity: 1, y: 0, x: 0 }}
+                  exit={{ opacity: 0, y: -20, x: 20 }}
+                  className={cn(
+                    'fixed top-20 right-4 z-50 px-4 py-3 rounded-xl shadow-lg backdrop-blur-xl',
+                    'flex items-center gap-2',
+                    saveStatus === 'success' && 'bg-green-500/20 border border-green-500/30 text-green-400',
+                    saveStatus === 'error' && 'bg-red-500/20 border border-red-500/30 text-red-400',
+                    saveStatus === 'saving' && 'bg-blue-500/20 border border-blue-500/30 text-blue-400'
+                  )}
+                >
+                  {saveStatus === 'saving' && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {saveStatus === 'success' && <Check className="h-4 w-4" />}
+                  {saveStatus === 'error' && <X className="h-4 w-4" />}
+                  <span className="text-sm font-medium">{saveMessage}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
             
             {/* Action Bar */}
             <ActionBar
@@ -709,13 +774,18 @@ function DashboardContent() {
               onSave={handleSave}
             />
 
-            {/* Timeline Results */}
-            <div className="p-6 rounded-2xl bg-zinc-900/40 border border-zinc-800/50 backdrop-blur-sm">
+            {/* Timeline Results - Glassmorphism Card */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="p-6 rounded-2xl bg-zinc-900/40 border border-white/10 backdrop-blur-xl"
+            >
               <ScriptTimeline
                 data={scriptData}
                 isLoading={isLoading}
               />
-            </div>
+            </motion.div>
 
             {/* 🎬 Visual Prompts Section - Enhanced for AI Tools */}
             {object?.visualPrompt && !isLoading && (

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ec4899"/>
+      <stop offset="100%" style="stop-color:#9333ea"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="url(#grad)"/>
+  <g fill="white">
+    <!-- Main sparkle -->
+    <path d="M16 6 L17.5 12.5 L24 14 L17.5 15.5 L16 22 L14.5 15.5 L8 14 L14.5 12.5 Z"/>
+    <!-- Small sparkle top-right -->
+    <path d="M23 7 L23.5 9 L25.5 9.5 L23.5 10 L23 12 L22.5 10 L20.5 9.5 L22.5 9 Z" opacity="0.8"/>
+    <!-- Small sparkle bottom-left -->
+    <path d="M9 20 L9.5 22 L11.5 22.5 L9.5 23 L9 25 L8.5 23 L6.5 22.5 L8.5 22 Z" opacity="0.8"/>
+  </g>
+</svg>

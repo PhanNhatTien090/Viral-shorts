@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useUser, SignInButton, SignUpButton } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { Sparkles, ArrowRight, Play, Star, Shield, Zap, Check } from 'lucide-react';
+import { ArrowRight, Play, Star, Shield, Zap, Check, Sparkles } from 'lucide-react';
+import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import {
   HeroBeams,
@@ -42,17 +43,7 @@ function Navbar() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <motion.div
-              whileHover={{ scale: 1.05, rotate: 5 }}
-              className="w-9 h-9 rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center shadow-lg shadow-pink-500/20"
-            >
-              <Sparkles className="h-5 w-5 text-white" />
-            </motion.div>
-            <span className="text-lg font-bold text-white group-hover:text-pink-400 transition-colors">
-              ViralScript
-            </span>
-          </Link>
+          <Logo size="md" href="/" />
 
           {/* Center Nav Links */}
           <div className="hidden md:flex items-center gap-8">
@@ -358,11 +349,8 @@ function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           {/* Logo column */}
           <div className="col-span-2 md:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center">
-                <Sparkles className="h-4 w-4 text-white" />
-              </div>
-              <span className="text-lg font-bold text-white">ViralScript</span>
+            <div className="mb-4">
+              <Logo size="md" href="/" animated={false} />
             </div>
             <p className="text-sm text-zinc-500">
               AI-powered scripts for viral short-form content.

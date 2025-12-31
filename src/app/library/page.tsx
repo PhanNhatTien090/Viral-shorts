@@ -12,22 +12,22 @@ function ScriptCard({ script, onDelete }: { script: Script; onDelete?: (id: numb
   const [isDeleting, setIsDeleting] = useState(false);
   
   const handleCopy = () => {
-    const fullText = `HOOK:\n${script.hook}\n\nNỘI DUNG:\n${script.script}\n\nKÊU GỌI HÀNH ĐỘNG:\n${script.cta}\n\nGỢI Ý HÌNH ẢNH:\n${script.visualPrompt || 'N/A'}`;
+    const fullText = `HOOK:\n${script.hook}\n\nSCRIPT:\n${script.script}\n\nCALL TO ACTION:\n${script.cta}\n\nVISUAL PROMPT:\n${script.visualPrompt || 'N/A'}`;
     navigator.clipboard.writeText(fullText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleDelete = async () => {
-    if (!confirm('Bạn có chắc muốn xóa kịch bản này?')) return;
+    if (!confirm('Are you sure you want to delete this script?')) return;
     setIsDeleting(true);
     // TODO: Implement delete API
     onDelete?.(script.id);
   };
   
-  const formattedDate = new Date(script.createdAt).toLocaleDateString('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
+  const formattedDate = new Date(script.createdAt).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
@@ -167,10 +167,10 @@ export default function LibraryPage() {
             <div className="mb-8">
               <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
                 <Library className="h-8 w-8 text-purple-400" />
-                Thư Viện Kịch Bản
+                Script Library
               </h1>
               <p className="text-sm text-zinc-400 mt-2">
-                Tất cả kịch bản bạn đã lưu. Tổng cộng: {scripts.length} kịch bản
+                All your saved scripts. Total: {scripts.length} scripts
               </p>
             </div>
 
@@ -198,10 +198,10 @@ export default function LibraryPage() {
                   <Lock className="h-10 w-10 text-purple-400" />
                 </div>
                 <h2 className="text-xl font-semibold text-white mb-2">
-                  Thư viện trống
+                  Library is empty
                 </h2>
                 <p className="text-zinc-400 text-center max-w-md">
-                  Bạn chưa lưu kịch bản nào. Tạo kịch bản mới và nhấn &quot;Lưu&quot; để thêm vào thư viện.
+                  You haven&apos;t saved any scripts yet. Create a new script and click &quot;Save&quot; to add it to your library.
                 </p>
               </div>
             )}

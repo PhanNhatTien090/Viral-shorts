@@ -73,14 +73,14 @@ interface AvatarMarqueeProps {
 
 export function AvatarMarquee({ className }: AvatarMarqueeProps) {
   const avatars = [
-    { name: 'Sarah L.', role: 'TikTok Creator', views: '2.4M' },
-    { name: 'Mike R.', role: 'YouTuber', views: '1.8M' },
-    { name: 'Emma T.', role: 'Influencer', views: '3.1M' },
-    { name: 'Alex K.', role: 'Content Creator', views: '890K' },
-    { name: 'Jessica W.', role: 'Shorts Creator', views: '1.2M' },
-    { name: 'David P.', role: 'Reels Expert', views: '2.7M' },
-    { name: 'Lisa M.', role: 'Brand Creator', views: '950K' },
-    { name: 'Tom H.', role: 'Viral Specialist', views: '4.2M' },
+    { name: 'Sarah L.', role: 'TikTok Creator', views: '2.4M', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face' },
+    { name: 'Mike R.', role: 'YouTuber', views: '1.8M', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face' },
+    { name: 'Emma T.', role: 'Influencer', views: '3.1M', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face' },
+    { name: 'Alex K.', role: 'Content Creator', views: '890K', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face' },
+    { name: 'Jessica W.', role: 'Shorts Creator', views: '1.2M', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face' },
+    { name: 'David P.', role: 'Reels Expert', views: '2.7M', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face' },
+    { name: 'Lisa M.', role: 'Brand Creator', views: '950K', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face' },
+    { name: 'Tom H.', role: 'Viral Specialist', views: '4.2M', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop&crop=face' },
   ];
 
   const items = avatars.map((avatar, i) => (
@@ -92,9 +92,11 @@ export function AvatarMarquee({ className }: AvatarMarqueeProps) {
       {/* Avatar with gradient ring */}
       <div className="relative">
         <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full opacity-75" />
-        <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
-          {avatar.name.split(' ').map(n => n[0]).join('')}
-        </div>
+        <img 
+          src={avatar.avatar} 
+          alt={avatar.name}
+          className="relative w-10 h-10 rounded-full object-cover border-2 border-zinc-900"
+        />
       </div>
       
       <div className="text-left">
